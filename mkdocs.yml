@@ -1,0 +1,112 @@
+site_name: pinnDE
+
+nav:
+
+  - Installation: InstallSetup.md
+  - Team: team.md
+  - Cite: cite.md
+  
+  - Tutorials:
+    - ODEs: Tutorials/Tutorials_ODEs/ODE_Tutorials.md
+    - PDEs in t and x: Tutorials/Tutorials_PDEs_tx/PDE_tx_tutorials.md
+    - PDEs in x and y: Tutorials/Tutorials_PDEs_xy/PDE_xy_tutorials.md
+
+  - API:
+    - Main User Functions:
+      - ode_Solvers: MainUserFunctions/ode_Solvers.md
+      - pde_Solvers: MainUserFunctions/pde_Solvers.md
+      - pde_Boundries_2var: MainUserFunctions/pde_Boundries_2var.md
+
+    - Main Solve Classes:
+    
+      - ode Solve Classes:
+        - ode_SolveClass: MainSolveClasses/odeSolveClasses/ode_SolveClass.md
+        - ode_SystemSolveClass: MainSolveClasses/odeSolveClasses/ode_SystemSolveClass.md
+        - ode_DeepONetSolveClass: MainSolveClasses/odeSolveClasses/ode_DeepONetSolveClass.md
+        - ode_SystemDeepONetSolveClass: MainSolveClasses/odeSolveClasses/ode_SystemDeepONetSolveClass.md
+
+      - pde Solve Classes:
+        - pde_SolveClass_tx: MainSolveClasses/pdeSolveClasses/pde_SolveClass_tx.md
+        - pde_SolveClass_xy: MainSolveClasses/pdeSolveClasses/pde_SolveClass_xy.md
+        - pde_DeepONetSolveClass_tx: MainSolveClasses/pdeSolveClasses/pde_DeepONetSolveClass_tx.md
+        - pde_DeepONetSolveClass_xy: MainSolveClasses/pdeSolveClasses/pde_DeepONetSolveClass_xy.md
+
+    - ODE :
+      - ode_ModelFuncs: ODE/ode_ModelFuncs.md
+      - ode_ParamChecks: ODE/ode_ParamChecks.md
+      - ode_Plotters: ODE/ode_Plotters.md
+      - ode_Points: ODE/ode_Points.md
+      - ode_trainingSelect: ODE/ode_trainingSelect.md
+      - ode_TimeSteppersDeepONet: ODE/ode_TimeSteppersDeepONet.md
+      - SpecificTraining : 
+        - IVP_Training:
+          - ode_TrainingIVP_soft: ODE/SpecificTraining/IVP_Training/ode_TrainingIVP_soft.md
+          - ode_TrainingIVP_hard: ODE/SpecificTraining/IVP_Training/ode_TrainingIVP_hard.md
+          - ode_Training2SystemIVP_soft: ODE/SpecificTraining/IVP_Training/ode_Training2SystemIVP_soft.md
+          - ode_Training3SystemIVP_soft: ODE/SpecificTraining/IVP_Training/ode_Training3SystemIVP_soft.md
+        - BVP_Training:
+          - ode_TrainingBVP_soft: ODE/SpecificTraining/BVP_Training/ode_TrainingBVP_soft.md
+          - ode_TrainingBVP_Hard: ODE/SpecificTraining/BVP_Training/ode_TrainingBVP_Hard.md
+        - DeepONet_Training:
+          - ode_TrainingDeepONetIVP: ODE/SpecificTraining/DeepONet_Training/ode_TrainingDeepONetIVP.md
+          - ode_TrainingDeepONetBVP: ODE/SpecificTraining/DeepONet_Training/ode_TrainingDeepONetBVP.md
+          - ode_TrainingDeepONet_2EqautionSystems: ODE/SpecificTraining/DeepONet_Training/ode_TrainingDeepONet_2EquationSystems.md
+          - ode_TrainingDeepONet_3EqautionSystems: ODE/SpecificTraining/DeepONet_Training/ode_TrainingDeepONet_3EquationSystems.md
+
+    - PDE: 
+      - pde_ParamChecks: PDE/pde_ParamChecks.md
+      - pde_Plotters: PDE/pde_Plotters.md
+      - pde_Points: PDE/pde_Points.md
+      - pde_trainingSelects: PDE/pde_trainingSelect_2var.md
+      - ModelFuncs:
+        - pde_ModelFuncs_2var: PDE/ModelFuncs/pde_ModelFuncs_2var.md
+        - pde_DeepONetModelFuncs_2var: PDE/ModelFuncs/pde_DeepONetModelFuncs_2var.md
+
+      - SpecificTraining_2var:
+        - tx_Training:
+          - pde_TrainingICBCP_hard: PDE/SpecificTraining_2var/tx_Training/pde_TrainingICBCP_hard.md
+          - pde_TrainingICBCP_periodic_soft: PDE/SpecificTraining_2var/tx_Training/pde_TrainingICBCP_periodic_soft.md
+          - pde_TrainingICBCP_dirichlet_soft: PDE/SpecificTraining_2var/tx_Training/pde_TrainingICBCP_dirichlet_soft.md
+          - pde_TrainingICBCP_neumann_soft: PDE/SpecificTraining_2var/tx_Training/pde_TrainingICBCP_neumann_soft.md
+        - xy_Training:
+          - pde_TrainingBCP_periodic: PDE/SpecificTraining_2var/xy_Training/pde_TrainingBCP_periodic.md
+          - pde_TrainingBCP_dirichlet_soft: PDE/SpecificTraining_2var/xy_Training/pde_TrainingBCP_dirichlet_soft.md
+          - pde_TrainingBCP_dirichlet_hard: PDE/SpecificTraining_2var/xy_Training/pde_TrainingBCP_dirichlet_hard.md
+          - pde_TrainingBCP_neuamnn_soft: PDE/SpecificTraining_2var/xy_Training/pde_TrainingBCP_neumann_soft.md
+        - tx_DeepONet_Training:
+          - pde_TrainingDeepONetICBCP_periodic_soft: PDE/SpecificTraining_2var/tx_DeepONet_Training/pde_TrainingDeepONetICBCP_periodic_soft.md
+          - pde_TrainingDeepONetICBCP_periodic_hard: PDE/SpecificTraining_2var/tx_DeepONet_Training/pde_TrainingDeepONetICBCP_periodic_hard.md
+          - pde_TrainingDeepONetICBCP_dirichlet_soft: PDE/SpecificTraining_2var/tx_DeepONet_Training/pde_TrainingDeepONetICBCP_dirichlet_soft.md
+          - pde_TrainingDeepONetICBCP_neumann_soft: PDE/SpecificTraining_2var/tx_DeepONet_Training/pde_TrainingDeepONetICBCP_neumann_soft.md
+
+        - xy_DeepONet_Training:
+          - pde_TrainingDeepONetBCP_hard: PDE/SpecificTraining_2var/xy_DeepONet_Training/pde_TrainingDeepONetBCP_hard.md
+          - pde_TrainingDeepONetBCP_dirichlet_soft: PDE/SpecificTraining_2var/xy_DeepONet_Training/pde_TrainingDeepONetBCP_dirichlet_soft.md
+          - pde_TrainingDeepONetBCP_neumann_soft: PDE/SpecificTraining_2var/xy_DeepONet_Training/pde_TrainingDeepONetBCP_neumann_soft.md
+
+theme: readthedocs
+
+plugins:
+  - search:
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+
+not_in_nav: |
+  index.md
+  /Tutorials/Tutorials_ODEs/Tutorials_ODEs_PINN/*
+  /Tutorials/Tutorials_ODEs/Tutorials_ODEs_DeepONet/*
+  /Tutorials/Tutorials_PDEs_tx/Tutorials_PDEs_tx_PINN/*
+  /Tutorials/Tutorials_PDEs_tx/Tutorials_PDEs_tx_DeepONet/*
+  /Tutorials/Tutorials_PDEs_xy/Tutorials_PDEs_xy_PINN/*
+  /Tutorials/Tutorials_PDEs_xy/Tutorials_PDEs_xy_DeepONet/*
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
