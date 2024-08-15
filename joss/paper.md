@@ -1,5 +1,5 @@
 ---
-title: 'PinnDE: Physics-Informed Neural Networks for Differential Equations
+title: 'PinnDE: Physics-Informed Neural Networks for Differential Equations'
 tags:
   - python
   - deep learning
