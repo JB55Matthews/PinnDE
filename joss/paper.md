@@ -12,6 +12,7 @@ authors:
   orcid: 0009-0002-2020-2278
   affiliation: "1"
   name: Alex Bihlo
+  orcid: 0000-0000-0000-0000
   affiliation: "1"
 affiliations:
   - name: Department of Mathematics and Statistics, Memorial University of Newfoundland
