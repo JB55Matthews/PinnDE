@@ -8,12 +8,12 @@ tags:
   - scientific machine learning
   - differential equations
 authors:
-  name: Jason Matthews
-  orcid: 0009-0002-2020-2278
-  affiliation: "1"
-  name: Alex Bihlo
-  orcid: 0000-0000-0000-0000
-  affiliation: "1"
+  - name: Jason Matthews
+    orcid: 0009-0002-2020-2278
+    affiliation: "1"
+  - name: Alex Bihlo
+    orcid: 0000-0000-0000-0000
+    affiliation: "1"
 affiliations:
   - name: Department of Mathematics and Statistics, Memorial University of Newfoundland
   - index: 1
