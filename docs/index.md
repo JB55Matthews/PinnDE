@@ -19,6 +19,7 @@ ODE
     * Initial value problems, orders 1-5
     * Boundary value problems, orders 1-3
     * Systems of initial value problems, orders 1-3
+
 *DeepONets
     * Initial value problems, orders 1-3
     * Boundary value problems, orders 1-3
@@ -29,6 +30,7 @@ PDE
 * PINNs
     * Spatio-temporal problems in 2 vairables
     * Spatial problems in 2 variables
+
 * DeepONets
     * Spatio-temporal problems in 2 vairables
     * Spatial problems in 2 variables
