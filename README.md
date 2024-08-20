@@ -22,9 +22,7 @@ Installing can simply be done with pip in the command line with
     pip install pinnde
 
 Citing
---------
-# Citing
-
+-------
 If PinnDE is used in academic research, please cite the paper found [here](https://arxiv.org/abs/2408.10011), 
 or with the corresponding BibTex citation
 
