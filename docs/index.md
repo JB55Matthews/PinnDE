@@ -12,12 +12,28 @@ these ideas can be large and more difficult to grasp. PinnDE provides simple imp
 variations of model parameters and training methods without needing to delve into low level implementations.
 
 We currently provide implemtations to solve the following problems
-* ODE
-   * Initial value problems, orders 1-5
-   * Boundary value problems, orders 1-3
-   * Systems of initial value problems, orders 1-3
-      * th
 
+ODE
+----
+* PINNs
+  * Initial value problems, orders 1-5
+  * Boundary value problems, orders 1-3
+  * Systems of initial value problems, orders 1-3
+*DeepONets
+  * Initial value problems, orders 1-3
+  * Boundary value problems, orders 1-3
+  * Systems of initial value problems, orders 1-3
+
+PDE
+-----
+* PINNs
+  * Spatio-temporal problems in 2 vairables
+  * Spatial problems in 2 variables
+* DeepONets
+  * Spatio-temporal problems in 2 vairables
+  * Spatial problems in 2 variables
+
+We provide Periodic, Dirichlet, and Neumann boudary conditions for each of these PDE problems
 
 ### Tutorials
 * [ODE Tuorials](Tutorials/Tutorials_ODEs/ODE_Tutorials.md)
