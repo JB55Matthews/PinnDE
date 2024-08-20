@@ -18,12 +18,12 @@ ODE
 * PINNs
     * Initial value problems, orders 1-5
     * Boundary value problems, orders 1-3
-    * Systems of initial value problems, orders 1-3
+    * Systems of initial value problems, orders 1-3, 2-3 equations
 
 * DeepONets
     * Initial value problems, orders 1-3
     * Boundary value problems, orders 1-3
-    * Systems of initial value problems, orders 1-3
+    * Systems of initial value problems, orders 1-3, 2-3 equations
 
 PDE
 -----
