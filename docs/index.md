@@ -20,7 +20,7 @@ ODE
     * Boundary value problems, orders 1-3
     * Systems of initial value problems, orders 1-3
 
-*DeepONets
+* DeepONets
     * Initial value problems, orders 1-3
     * Boundary value problems, orders 1-3
     * Systems of initial value problems, orders 1-3
