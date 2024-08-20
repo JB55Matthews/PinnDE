@@ -1,7 +1,7 @@
 # Citing
 
-If PinnDE is used in academic research, please cite the paper found [here](https://arxiv.org/abs/2408.10011), or
-with the corresponding BibTex citation
+If PinnDE is used in academic research, please cite the paper found [here](https://arxiv.org/abs/2408.10011), 
+or with the corresponding BibTex citation
 
     @misc{matthews2024pinndephysicsinformedneuralnetworks,
         title={PinnDE: Physics-Informed Neural Networks for Solving Differential Equations}, 
