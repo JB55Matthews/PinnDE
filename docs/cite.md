@@ -7,5 +7,5 @@ or with the corresponding BibTex citation
             title={PinnDE: Physics-Informed Neural Networks for Solving Differential Equations},
             author={Matthews, Jason and Bihlo, Alex},
             journal={arXiv preprint arXiv:2408.10011},
-              year={2024}
+            year={2024}
     }
