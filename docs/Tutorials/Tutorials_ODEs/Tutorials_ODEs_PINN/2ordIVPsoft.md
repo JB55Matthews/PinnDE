@@ -20,7 +20,7 @@ the exact solution
 Next, we declare our equation, order, inital values, t boundary, number of points, and epochs. Equation must be in form eqn = 0
 
     eqn = "utt - ut**2"
-    order = 1
+    order = 2
     inits = [1, 0.5]
     t_bdry = [0,1]
     N_pde = 100
@@ -47,7 +47,7 @@ We can also plot the predicted solution against an exact solution if we have one
     import numpy as np
 
     eqn = "utt - ut**2"
-    order = 1
+    order = 2
     inits = [1, 0.5]
     t_bdry = [0,1]
     N_pde = 100
