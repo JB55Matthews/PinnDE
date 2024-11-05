@@ -9,7 +9,7 @@ that are available within this field.This library provides simple, user-friendly
 non-profficent users of python or the library, where collaborators should be able to understand the contents of
 the code quickly and without having to learn the library themselves. We also propose the use of PinnDE for education use.
 Methods in this field may be taught by educators at a low level may be understandable to students, but the code to implement
-these ideas can be large and more difficult to grasp. PinnDE provides simple implementations where students can expmerimetn with different
+these ideas can be large and more difficult to grasp. PinnDE provides simple implementations where students can expmeriment with different
 variations of model parameters and training methods without needing to delve into low level implementations.
 
 The documentation can be found [here](https://pinnde.readthedocs.io/en/latest/)
