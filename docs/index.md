@@ -4,7 +4,7 @@ Physics Informed Neural Networks for Differential Equations (PinnDE) is an open-
 in Python 3 for solving ordinary and partial differential equations (ODEs and PDEs) using both
 physics informed neural networks (PINNs) and deep operator networks (DeepONets). The goal of PinnDE is to
 provide a user-friendly library as an alternative to the more powerful but more complex alternative packages
-that are available within this field.This library provides simple, user-friendly interfacing of solving methods which can easily be used in collaboration with 
+that are available within this field. This library provides simple, user-friendly interfacing of solving methods which can easily be used in collaboration with 
 non-profficent users of python or the library, where collaborators should be able to understand the contents of
 the code quickly and without having to learn the library themselves. We also propose the use of PinnDE for education use.
 Methods in this field may be taught by educators at a low level may be understandable to students, but the code to implement
