@@ -1,14 +1,16 @@
 __all__ = [
     "boundaries",
-    "geometry",
+    "domain",
     "models",
     "plotters",
-    "initials"
+    "initials",
+    "data"
 ]
 
 from . import boundaries
-from . import geometry
+from . import domain
 from . import models
 from . import plotters
+from . import data
 
 from . import initials

@@ -1,5 +1,5 @@
 
-class geometry():
-    
+class data():
+
     def __init__():
         return

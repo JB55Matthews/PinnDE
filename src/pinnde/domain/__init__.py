@@ -1,11 +1,11 @@
 __all__ = [
-    "geometry",
+    "domain",
     "interval",
     "timeXinterval",
     "rectangle"
 ]
 
-from .geometry import geometry
+from .domain import domain
 from .interval import interval
 from .timeXinterval import timeXinterval
 from .rectangle import rectangle

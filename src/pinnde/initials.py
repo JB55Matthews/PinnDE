@@ -1,5 +1,5 @@
 
 class initials():
 
-    def __init__(self, geometry, lambdas, n_iv):
+    def __init__(self, geometry, lambdas):
         return
