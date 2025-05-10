@@ -1,31 +1,44 @@
 from .model import model
+from ..selectors import pinnSelectors
+from ..data import timededata
 import tensorflow as tf
 import numpy as np
 
 class pinn(model):
 
-    def __init__(self, data, 
+    def __init__(self, data,
                  layers=4, units=40, inner_act="tanh",
-                 out_act="linear", hard_constraint="false"):
-        
+                 out_act="linear", constraint="soft"):
+
+        self._data = data
         self._domain = data.get_domain()
         self._boundaries = data.get_boundaries()
-        self._initials = data.get_initials()
+        self._clp = data.get_clp()
+        self._bcp = data.get_bcp()
         self._layers = layers
         self._units = units
         self._inner_act = inner_act
         self._out_act = out_act
-        self._hard_constraint = hard_constraint
+        self._constraint = constraint
 
-        n = 3
-        t_bdry = [0,1]
+        n = self._domain.get_dim()
+        pt_maxes = self._clp.max(axis=0)
+        pt_mins = self._clp.min(axis=0)
+
+        if isinstance(data, timededata):
+          self._initials = data.get_initials()
+          self._icp = data.get_icp()
+          n += 1
 
         inlist = []
         blist = []
 
         for i in range(n):
             input = tf.keras.layers.Input(shape=(1,))
-            bin = Periodic(t_bdry[0], t_bdry[1])(input)
+            if (self._boundaries.get_bdry_type() == 1):
+              bin = Periodic(pt_mins[i], pt_mins[i])(input)
+            else:
+              bin = Normalize(pt_mins[i], pt_maxes[i])(input)
             inlist.append(input)
             blist.append(bin)
 
@@ -35,13 +48,18 @@ class pinn(model):
             b = tf.keras.layers.Dense(units, activation=inner_act)(b)
         out = tf.keras.layers.Dense(1, activation=out_act)(b)
 
+        if pinnSelectors.pinnSelector(self._constraint)():
+          # hard constrain network
+          pass
+
         model = tf.keras.models.Model(inlist, out)
         model.summary()
 
         self._network = model
-    
+
     def train(self, eqns, epochs, opt="adam", meta="false", adapt_pt="false"):
         return
+
     
 
 # Define the normalization layer
