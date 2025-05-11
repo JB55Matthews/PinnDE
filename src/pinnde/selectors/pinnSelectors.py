@@ -1,3 +1,4 @@
+import tensorflow as tf
 
 FUNCTION_REGISTRY = {}
 
@@ -7,13 +8,17 @@ def register(key):
         return func
     return decorator
 
-@register(1)
-def func_1():
-    print("Function 1 executed")
+@register("hard")
+def isHardConstrained():
+    return True
 
-@register(2)
-def func_2():
-    print("Function 2 executed")
+@register("soft")
+def isHardConstrained():
+    return False
 
-def pinnSelector(i):
-    return FUNCTION_REGISTRY.get(i, lambda: print("Invalid key"))
+@register("adam")
+def adam(lr):
+    return tf.keras.optimizers.Adam(lr)
+
+def pinnSelector(key):
+    return FUNCTION_REGISTRY.get(key, lambda: print("Invalid key"))

@@ -15,3 +15,6 @@ class timededata(dedata):
 
   def get_initials(self):
     return self._initials
+  
+  def get_n_iv(self):
+    return self._n_iv

@@ -58,8 +58,66 @@ class pinn(model):
         self._network = model
 
     def train(self, eqns, epochs, opt="adam", meta="false", adapt_pt="false"):
-        return
+      if isinstance(self._data, timededata):
+        # self.trainTime(eqns, epochs, opt, meta, adapt_pt)
+        self.trainNoTime(eqns, epochs, opt, meta, adapt_pt)
+      else:
+        self.trainNoTime(eqns, epochs, opt, meta, adapt_pt)      
+    
+    def trainNoTime(self, eqns, epochs, opt, meta, adapt_pt):
+      print("here") 
+      lr = tf.keras.optimizers.schedules.PolynomialDecay(1e-3, epochs, 1e-4)
+      opt = pinnSelectors.pinnSelector(opt)(lr)
+      bs_clp, bs_bcp = self._data.get_n_clp(), self._data.get_n_bc()
 
+      ds_clp = tf.data.Dataset.from_tensor_slices(self._data.get_clp())
+      ds_clp = ds_clp.cache().shuffle(self._data.get_n_clp()).batch(bs_clp)
+
+      ds_bc = tf.data.Dataset.from_tensor_slices(self._data.get_bcp())
+      ds_bc = ds_bc.cache().shuffle(self._data.get_n_bc()).batch(bs_bcp)
+
+      ds = tf.data.Dataset.zip((ds_clp, ds_bc))
+      ds = ds.prefetch(tf.data.experimental.AUTOTUNE)
+
+      epoch_loss = np.zeros(epochs)
+      clp_loss = np.zeros(epochs)
+      bc_loss = np.zeros(epochs)
+
+      BCloss = None
+      CLPloss = None
+
+      for i in range(epochs):
+
+        n_batches = 0
+
+        for (clps, bcs) in ds:
+
+          CLPloss, BCloss, grads = self.trainStep(eqns, clps, bcs, self._network)
+          opt.apply_gradients(zip(grads, model.trainable_variables))
+          n_batches += 1
+          epoch_loss[i] += CLPloss + BCloss
+          clp_loss[i] += CLPloss
+          bc_loss[i] += BCloss
+
+        epoch_loss[i] /= n_batches
+
+        if (np.mod(i, 100)==0):
+            print("CLP loss, BC loss in {}th epoch: {: 6.4f}, {: 6.4f}.".format(i, CLPloss.numpy(), BCloss.numpy()))
+
+      self._epoch_loss = epoch_loss
+      self._clp_loss = clp_loss
+      self._bc_loss = bc_loss
+      self._eqns = eqns
+      return
+
+    def trainTime(self, eqns, epochs, opt, meta, adapt_pt):
+      return
+
+    def trainStep(self, eqns, clps, bcs, network):
+      return
+
+    def trainStepTime():
+      return
     
 
 # Define the normalization layer

@@ -23,3 +23,9 @@ class dedata(data):
 
     def get_boundaries(self):
         return self._boundaries
+    
+    def get_n_clp(self):
+      return self._n_clp
+
+    def get_n_bc(self):
+      return self._n_bc
