@@ -26,11 +26,12 @@ class initials():
     func_points = []
     cols = points.ndim
     for i in range(cols):
-      func_points.append(points[:, i])
+      func_points.append(points[:, i+1])
     for func in self._lambdas:
       next_points = func(*func_points)
       points = np.column_stack([points, next_points])
 
-    time_points = self._domain.get_timeRange()[0] + 0*lhs(1, n_iv).astype(np.float32)
-    points = np.column_stack((time_points, points))
+    points[:, 0] = 0
+    # time_points = self._domain.get_timeRange()[0] + 0*lhs(1, n_iv).astype(np.float32)
+    # points = np.column_stack((time_points, points))
     return points
