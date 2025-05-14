@@ -49,21 +49,25 @@ class pinn(model):
 
         for i in range(layers):
             b = tf.keras.layers.Dense(units, activation=inner_act)(b)
-        out = tf.keras.layers.Dense(1, activation=out_act)(b)
+
+        outs = []
+        for i in range(len(eqns)):
+          out = tf.keras.layers.Dense(1, activation=out_act)(b)
+          outs.append(out)
 
         if pinnSelectors.pinnSelector(self._constraint)():
           # hard constrain network
           pass
 
-        model = tf.keras.models.Model(inlist, out)
+        model = tf.keras.models.Model(inlist, outs)
         model.summary()
 
         self._network = model
 
     def train(self, epochs, opt="adam", meta="false", adapt_pt="false"):
       if isinstance(self._data, timededata):
-        # self.trainTime(eqns, epochs, opt, meta, adapt_pt)
-        self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)
+        self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
+        # self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)
       else:
         self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)      
     
@@ -141,7 +145,7 @@ class pinn(model):
         n_batches = 0
 
         for (clps, bcs, ics) in ds:
-          self.trainStepTime(eqns, clps, bcs, ics, self._network)
+          
           CLPloss, BCloss, ICloss, grads = pinnTraining.trainStepTime(eqns, clps, bcs, ics, self._network, self._dim)
           opt.apply_gradients(zip(grads, model.trainable_variables))
           n_batches += 1
