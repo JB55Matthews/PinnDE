@@ -7,6 +7,7 @@ class initials():
   def __init__(self, domain, lambdas):
     self._domain = domain
     self._lambdas = lambdas
+    self._orders = []
     self._init_block_size = None
 
   def get_domain(self):
@@ -17,17 +18,30 @@ class initials():
 
   def get_init_block_size(self):
     return self._init_block_size
+  
+  def get_orders(self):
+    return self._orders
 
   def set_init_block_size(self, block_size):
     self._init_block_size = block_size
 
+
   def sampleInitials(self, n_iv):
     flat_lambdas = self._lambdas
-    
+    self._orders = [len(self._lambdas)]
     # multiple eqns, [[lambdas], [lambdas]]
     if (type(self._lambdas[0]) == list):
-      flat_lambdas = [x for xs in self._lambdas for x in xs]
-
+      flat_lambdas = []
+      self._orders = []
+      for funcs in self._lambdas:
+        i = 0
+        for func in funcs:
+          flat_lambdas.append(func)
+          i += 1
+        self._orders.append(i)
+    
+      # flat_lambdas = [x for xs in self._lambdas for x in xs]
+  
     
     points = self._domain.sampleDomain(n_iv)
     func_points = []

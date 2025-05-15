@@ -13,9 +13,9 @@ class dirichlet(boundaries):
 
       for func in lambdas:
         args = (inspect.getfullargspec(func))[0]
-        if (len(args) != domain.get_dim()):
-            raise ValueError("Lambda functions for boundaries must be functions of spatial dimension, even if variables not used. \
-                            Examples; lambda x, y: 0+0*x+0*y, or lambda x1, x2, x3: 2*x2")
+        if (len(args) != domain.get_dim()) and (len(args) != domain.get_dim()+1):
+            raise ValueError("Lambda functions for boundaries must be functions of time+spatial dimensions, even if variables not used. \
+                            Examples; lambda t, x1: 0+0*x1+0*t, or lambda x1, x2, x3: 2*x2")
 
       if (len(lambdas) == 1):
         new_lambdas = []
@@ -28,11 +28,14 @@ class dirichlet(boundaries):
 
     def boundaryPoints(self, n_bc):
       sampled_boundary = self._domain.sampleBoundary(n_bc)
-      if isinstance(self._domain, timedomain):
-        time_points = sampled_boundary[:,0]
-        pure_boundary = sampled_boundary[:,1:,]
-      else:
-        pure_boundary = sampled_boundary
+
+      # if isinstance(self._domain, timedomain):
+      #   time_points = sampled_boundary[:,0]
+      #   pure_boundary = sampled_boundary[:,1:,]
+      # else:
+      #   pure_boundary = sampled_boundary
+
+      pure_boundary = sampled_boundary
 
       func_inputs = []
       comp_boundary = pure_boundary.reshape(-1, self._domain.get_bdry_component_size(), pure_boundary.shape[1])
@@ -48,7 +51,7 @@ class dirichlet(boundaries):
 
       boundary_points = np.column_stack([pure_boundary, np.array(out).flatten()])
 
-      if (isinstance(self._domain, timedomain)):
-        boundary_points = np.column_stack([time_points, boundary_points])
-
-      return boundary_points
+      # if (isinstance(self._domain, timedomain)):
+      #   boundary_points = np.column_stack([time_points, boundary_points])
+      # print(boundary_points)
+      return boundary_points  

@@ -18,6 +18,7 @@ class pinn(model):
         self._clp = data.get_clp()
         self._bcp = data.get_bcp()
         self._dim = self._domain.get_dim()
+        self._bdry_type = self._boundaries.get_bdry_type()
         self._layers = layers
         self._units = units
         self._inner_act = inner_act
@@ -28,9 +29,16 @@ class pinn(model):
         pt_maxes = self._clp.max(axis=0)
         pt_mins = self._clp.min(axis=0)
 
+        self._epoch_loss = None
+        self._clp_loss = None
+        self._bc_loss = None
+        self._ic_loss = None
+        self._eqns = eqns
+
         if isinstance(data, timededata):
           self._initials = data.get_initials()
           self._icp = data.get_icp()
+          self._t_orders = self._initials.get_orders()
           n += 1
 
         inlist = []
@@ -63,6 +71,12 @@ class pinn(model):
         model.summary()
 
         self._network = model
+
+    def get_network(self):
+      return self._network
+    
+    def get_epoch_loss(self):
+      return self._epoch_loss
 
     def train(self, epochs, opt="adam", meta="false", adapt_pt="false"):
       if isinstance(self._data, timededata):
@@ -100,8 +114,8 @@ class pinn(model):
 
         for (clps, bcs) in ds:
 
-          CLPloss, BCloss, grads = pinnTraining.trainStep(eqns, clps, bcs, self._network, self._dim)
-          opt.apply_gradients(zip(grads, model.trainable_variables))
+          CLPloss, BCloss, grads = pinnTraining.trainStep(eqns, clps, bcs, self._network, self._dim, self._bdry_type)
+          opt.apply_gradients(zip(grads, self._network.trainable_variables))
           n_batches += 1
           epoch_loss[i] += CLPloss + BCloss
           clp_loss[i] += CLPloss
@@ -146,8 +160,9 @@ class pinn(model):
 
         for (clps, bcs, ics) in ds:
           
-          CLPloss, BCloss, ICloss, grads = pinnTraining.trainStepTime(eqns, clps, bcs, ics, self._network, self._dim)
-          opt.apply_gradients(zip(grads, model.trainable_variables))
+          CLPloss, BCloss, ICloss, grads = pinnTraining.trainStepTime(eqns, clps, bcs, ics, self._network, 
+                                                                      self._dim, self._bdry_type, self._t_orders)
+          opt.apply_gradients(zip(grads, self._network.trainable_variables))
           n_batches += 1
           epoch_loss[i] += CLPloss + BCloss
           clp_loss[i] += CLPloss
