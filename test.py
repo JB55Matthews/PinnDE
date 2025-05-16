@@ -3,15 +3,53 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
+
+tel = p.domain.Time_NEllipsoid(2, [1, 2], [2, 3], [3,4])
+# b = tel.sampleBoundary(500)
+# d = tel.sampleDomain(10000)
+
+# plt.figure()
+# plt.scatter(b[:, 1], b[:, 2])
+# plt.savefig("test-boundary")
+# plt.clf()
+
+# plt.figure()
+# plt.scatter(d[:, 1], d[:, 2])
+# plt.savefig("test-domain")
+# plt.clf()
+
+ball = p.domain.NEllipsoid(3, [0, 0, 0], [1, 1, 2])
+b = ball.sampleBoundary(600)
+d = ball.sampleDomain(10000)
+
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+ax.scatter(b[:, 0], b[:, 1], b[:, 2])
+plt.savefig("test-boundary")
+plt.clf()
+
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+ax.scatter(d[:, 0], d[:, 1], d[:, 2])
+plt.savefig("test-domain")
+plt.clf()
+
+# --------------
+
+# tr = p.domain.Time_NRect(2, [0, 0], [1, 1], [3,4])
+# b =tr.sampleBoundary(10)
+# print(b)
+# print(np.shape(b))
+
 # Poisson
-re2 = p.domain.NRect(2, [-1, -1], [1, 1])
-bound2 = p.boundaries.dirichlet(re2, [lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)])
-dat2 = p.data.dedata(re2, bound2, 12000, 800)
-mymodel = p.models.pinn(dat2, ["ux1x1 + ux2x2 - (-2*np.pi**2*tf.cos(np.pi*x1)*tf.sin(np.pi*x2))"])
-epochs = 1500
-mymodel.train(epochs)
-p.plotters.plot_solution_prediction_2D(mymodel)
-p.plotters.plot_epoch_loss(mymodel)
+# re2 = p.domain.NRect(2, [-1, -1], [1, 1])
+# bound2 = p.boundaries.dirichlet(re2, [lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)])
+# dat2 = p.data.dedata(re2, bound2, 12000, 800)
+# mymodel = p.models.pinn(dat2, ["ux1x1 + ux2x2 - (-2*np.pi**2*tf.cos(np.pi*x1)*tf.sin(np.pi*x2))"])
+# epochs = 1500
+# mymodel.train(epochs)
+# p.plotters.plot_solution_prediction_2D(mymodel)
+# p.plotters.plot_epoch_loss(mymodel)
 
 # Heat
 # tre = p.domain.Time_NRect(1, [0], [1], [0,1])
