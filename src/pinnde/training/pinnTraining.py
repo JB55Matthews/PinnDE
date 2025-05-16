@@ -3,6 +3,69 @@ import numpy as np
 import ast
 
 def trainStep(eqns, clps, bcs, network, dim, bdry_type):
+    clps_group = []
+    for i in range(dim):
+        globals()[f"x{i+1}_clp"] = clps[:,i:i+1]
+        clps_group.append(globals()[f"x{i+1}_clp"])  
+
+    u_bcs = bcs[:,-1:]
+    bcs_group = []
+    for i in range(dim):
+        globals()[f"x{i+1}_bc"] = bcs[:,i:i+1]
+        bcs_group.append(globals()[f"x{i+1}_bc"])
+
+    # Outer gradient for tuning network parameters
+    with tf.GradientTape() as tape:
+        # # Inner gradient for derivatives of u wrt x and t
+        with tf.GradientTape(persistent=True) as tape1:
+            for col in clps_group:
+                tape1.watch(col)
+            for col in bcs_group:
+                tape1.watch(col)
+
+            u = tf.cast(network(clps_group), tf.float32)
+            first_ders = []
+            second_ders = []
+            third_ders = []
+            for i in range(dim):
+                globals()[f"x{i+1}"] = tf.cast(clps_group[i], tf.float32)
+                globals()[f"ux{i+1}"] = tf.cast(tape1.gradient(u, clps_group[i]), tf.float32)
+                # first_ders.append(globals()[f"ux{i+1}"])
+                globals()[f"ux{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}"], clps_group[i]), tf.float32)
+                # second_ders.append(globals()[f"ux{i+1}x{i+1}"])
+                globals()[f"ux{i+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}x{i+1}"], clps_group[i]), tf.float32)
+                # third_ders.append(globals()[f"ux{i+1}x{i+1}x{i+1}"])
+
+        CLPloss = 0
+        parse_tree = ast.parse(eqns[0], mode = "eval")
+        eqnparse = eval(compile(parse_tree, "<string>", "eval"))
+        CLPloss += tf.reduce_mean(tf.square(eqnparse))
+        CLPloss = tf.cast(CLPloss, tf.float32)
+
+        BCloss = 0
+        if bdry_type == 1:
+            pass
+
+        elif bdry_type == 2:
+            # print(bcs)
+            # print("break")
+            # print(bcs_group)
+            u_bc_pred = network(bcs_group)
+            u_bcs = tf.cast(u_bcs, tf.float32)
+            BCloss = tf.reduce_mean(tf.square(u_bcs-u_bc_pred))
+
+        elif bdry_type == 3:
+            pass
+        
+
+        # print(clps)
+        # print(clps_group)
+        # print(bcs)
+        # print(bcs_group)
+        loss = CLPloss + BCloss
+    
+    grads = tape.gradient(loss, network.trainable_variables)
+    return CLPloss, BCloss, grads
     return
 
 def trainStepTime(eqns, clps, bcs, ics, network, dim, bdry_type, t_orders):

@@ -8,6 +8,8 @@ class Time_NRect(timedomain):
   def __init__(self, dim, xmins, xmaxs, timeRange):
       super().__init__(dim, timeRange)
       super().set_bdry_components(self._dim * 2)
+      super().set_max_dim_vals(xmaxs)
+      super().set_min_dim_vals(xmins)
       self._xmins = xmins
       self._xmaxs = xmaxs
 

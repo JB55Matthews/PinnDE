@@ -8,6 +8,8 @@ class NRect(domain):
     def __init__(self, dim, xmins, xmaxs):
       super().__init__(dim)
       super().set_bdry_components(self._dim * 2)
+      super().set_max_dim_vals(xmaxs)
+      super().set_min_dim_vals(xmins)
       self._xmins = xmins
       self._xmaxs = xmaxs
 

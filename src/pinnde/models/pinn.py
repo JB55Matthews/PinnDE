@@ -8,7 +8,7 @@ import numpy as np
 class pinn(model):
 
     def __init__(self, data, eqns,
-                 layers=4, units=40, inner_act="tanh",
+                 layers=4, units=60, inner_act="tanh",
                  out_act="linear", constraint="soft"):
 
         self._data = data
@@ -29,6 +29,7 @@ class pinn(model):
         pt_maxes = self._clp.max(axis=0)
         pt_mins = self._clp.min(axis=0)
 
+        self._epochs = None
         self._epoch_loss = None
         self._clp_loss = None
         self._bc_loss = None
@@ -71,17 +72,26 @@ class pinn(model):
         model.summary()
 
         self._network = model
+# --------------------------------
 
     def get_network(self):
       return self._network
     
     def get_epoch_loss(self):
       return self._epoch_loss
+    
+    def get_domain(self):
+      return self._domain
+    
+    def get_epochs(self):
+      return self._epochs
+
+  
 
     def train(self, epochs, opt="adam", meta="false", adapt_pt="false"):
+      self._epochs = epochs
       if isinstance(self._data, timededata):
         self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
-        # self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)
       else:
         self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)      
     
