@@ -1,7 +1,7 @@
 from .model import model
 from ..selectors import pinnSelectors
 from ..data import timededata
-from ..training import pinnTraining 
+from ..training import pinnTrainSteps 
 import tensorflow as tf
 import numpy as np
 
@@ -42,15 +42,20 @@ class pinn(model):
           self._t_orders = self._initials.get_orders()
           n += 1
 
+        # ---------
         inlist = []
         blist = []
 
         for i in range(n):
             input = tf.keras.layers.Input(shape=(1,))
-            if (self._boundaries.get_bdry_type() == 1):
-              bin = Periodic(pt_mins[i], pt_mins[i])(input)
+            # time commponent always is normalized even in periodic
+            if isinstance(data, timededata) and (i == 0):
+              bin = Normalize(pt_mins[i], pt_maxes[i])(input)
+            elif (self._boundaries.get_bdry_type() == 1):
+              bin = Periodic(pt_mins[i], pt_maxes[i])(input)
             else:
               bin = Normalize(pt_mins[i], pt_maxes[i])(input)
+
             inlist.append(input)
             blist.append(bin)
 
@@ -86,6 +91,8 @@ class pinn(model):
     def get_epochs(self):
       return self._epochs
 
+    def get_boundaries(self):
+      return self._boundaries
   
 
     def train(self, epochs, opt="adam", meta="false", adapt_pt="false"):
@@ -124,7 +131,7 @@ class pinn(model):
 
         for (clps, bcs) in ds:
 
-          CLPloss, BCloss, grads = pinnTraining.trainStep(eqns, clps, bcs, self._network, self._dim, self._bdry_type)
+          CLPloss, BCloss, grads = pinnTrainSteps.trainStep(eqns, clps, bcs, self._network, self._dim, self._bdry_type)
           opt.apply_gradients(zip(grads, self._network.trainable_variables))
           n_batches += 1
           epoch_loss[i] += CLPloss + BCloss
@@ -170,7 +177,7 @@ class pinn(model):
 
         for (clps, bcs, ics) in ds:
           
-          CLPloss, BCloss, ICloss, grads = pinnTraining.trainStepTime(eqns, clps, bcs, ics, self._network, 
+          CLPloss, BCloss, ICloss, grads = pinnTrainSteps.trainStepTime(eqns, clps, bcs, ics, self._network, 
                                                                       self._dim, self._bdry_type, self._t_orders)
           opt.apply_gradients(zip(grads, self._network.trainable_variables))
           n_batches += 1

@@ -24,17 +24,12 @@ def trainStep(eqns, clps, bcs, network, dim, bdry_type):
                 tape1.watch(col)
 
             u = tf.cast(network(clps_group), tf.float32)
-            first_ders = []
-            second_ders = []
-            third_ders = []
+    
             for i in range(dim):
                 globals()[f"x{i+1}"] = tf.cast(clps_group[i], tf.float32)
                 globals()[f"ux{i+1}"] = tf.cast(tape1.gradient(u, clps_group[i]), tf.float32)
-                # first_ders.append(globals()[f"ux{i+1}"])
                 globals()[f"ux{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}"], clps_group[i]), tf.float32)
-                # second_ders.append(globals()[f"ux{i+1}x{i+1}"])
                 globals()[f"ux{i+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}x{i+1}"], clps_group[i]), tf.float32)
-                # third_ders.append(globals()[f"ux{i+1}x{i+1}x{i+1}"])
 
         CLPloss = 0
         parse_tree = ast.parse(eqns[0], mode = "eval")
@@ -43,13 +38,12 @@ def trainStep(eqns, clps, bcs, network, dim, bdry_type):
         CLPloss = tf.cast(CLPloss, tf.float32)
 
         BCloss = 0
+        # periodic
         if bdry_type == 1:
-            pass
+            BCloss = tf.cast(0, tf.float32)
+           
 
         elif bdry_type == 2:
-            # print(bcs)
-            # print("break")
-            # print(bcs_group)
             u_bc_pred = network(bcs_group)
             u_bcs = tf.cast(u_bcs, tf.float32)
             BCloss = tf.reduce_mean(tf.square(u_bcs-u_bc_pred))
@@ -57,16 +51,11 @@ def trainStep(eqns, clps, bcs, network, dim, bdry_type):
         elif bdry_type == 3:
             pass
         
-
-        # print(clps)
-        # print(clps_group)
-        # print(bcs)
-        # print(bcs_group)
         loss = CLPloss + BCloss
     
     grads = tape.gradient(loss, network.trainable_variables)
     return CLPloss, BCloss, grads
-    return
+
 
 def trainStepTime(eqns, clps, bcs, ics, network, dim, bdry_type, t_orders):
 
@@ -95,7 +84,6 @@ def trainStepTime(eqns, clps, bcs, ics, network, dim, bdry_type, t_orders):
     for i in range(dim):
         globals()[f"x{i+1}_bc"] = bcs[:,i+1:i+2]
         bcs_group.append(globals()[f"x{i+1}_bc"])
-    # bcs_group.append(u_bcs)
 
     # Outer gradient for tuning network parameters
     with tf.GradientTape() as tape:
@@ -107,22 +95,16 @@ def trainStepTime(eqns, clps, bcs, ics, network, dim, bdry_type, t_orders):
                 tape1.watch(col)
             for col in ics_group:
                 tape1.watch(col)
-    
+            
             u = tf.cast(network(clps_group), tf.float32)
             ut = tf.cast(tape1.gradient(u, clps_group[0]), tf.float32)
             utt = tf.cast(tape1.gradient(ut, clps_group[0]), tf.float32)
             uttt = tf.cast(tape1.gradient(utt, clps_group[0]), tf.float32)
-            first_ders = [ut]
-            second_ders = [utt]
-            third_ders = [uttt]
             for i in range(dim):
                 globals()[f"x{i+1}"] = tf.cast(clps_group[i+1], tf.float32)
                 globals()[f"ux{i+1}"] = tf.cast(tape1.gradient(u, clps_group[i+1]), tf.float32)
-                # first_ders.append(globals()[f"ux{i+1}"])
                 globals()[f"ux{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}"], clps_group[i+1]), tf.float32)
-                # second_ders.append(globals()[f"ux{i+1}x{i+1}"])
                 globals()[f"ux{i+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}x{i+1}"], clps_group[i+1]), tf.float32)
-                # third_ders.append(globals()[f"ux{i+1}x{i+1}x{i+1}"])
 
         t = tf.cast(clps_group[0], tf.float32)
 
@@ -133,8 +115,10 @@ def trainStepTime(eqns, clps, bcs, ics, network, dim, bdry_type, t_orders):
         CLPloss = tf.cast(CLPloss, tf.float32)
 
         BCloss = 0
+        # periodic
         if bdry_type == 1:
-            pass
+            BCloss = tf.cast(0, tf.float32)
+            
 
         elif bdry_type == 2:
             # print(bcs)
@@ -162,12 +146,6 @@ def trainStepTime(eqns, clps, bcs, ics, network, dim, bdry_type, t_orders):
                 u_init_pred = next_pred
         
     
-        # print(ics)
-        # print(ics_group)
-        # print(clps)
-        # print(clps_group)
-        # print(bcs)
-        # print(bcs_group)
         loss = CLPloss + BCloss + ICloss
     
     grads = tape.gradient(loss, network.trainable_variables)

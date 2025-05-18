@@ -14,17 +14,35 @@ class Time_NRect(timedomain):
       self._xmaxs = xmaxs
 
   def isInside(self, timepoint):
-    for i in range(self._dim):
-      if ((self._xmins[i] > timepoint[i+1]) or (self._xmaxs[i] < timepoint[i+1])):
-        return False
-    return True
+    # No time componennt
+    if (len(timepoint) == self._dim):
+      for i in range(self._dim):
+        if ((self._xmins[i] > timepoint[i]) or (self._xmaxs[i] < timepoint[i])):
+          return False
+      return True
+    # time components
+    elif (len(timepoint) == self._dim + 1):
+      for i in range(self._dim):
+        if ((self._xmins[i] > timepoint[i+1]) or (self._xmaxs[i] < timepoint[i+1])):
+          return False
+      return True
+    
 
   def onBoundary(self, timepoint):
-    for i in range(self._dim):
-      # maybe replace with isclose to
-      if ((self._xmins[i] == timepoint[i+1]) or (self._xmaxs[i] == timepoint[i+1])):
-        return True
-    return False
+    # No time componennt
+    if (len(timepoint) == self._dim):
+      for i in range(self._dim):
+        # maybe replace with isclose to
+        if ((self._xmins[i] == timepoint[i]) or (self._xmaxs[i] == timepoint[i])):
+          return True
+      return False
+    # time components
+    elif (len(timepoint) == self._dim + 1):
+      for i in range(self._dim):
+        # maybe replace with isclose to
+        if ((self._xmins[i] == timepoint[i+1]) or (self._xmaxs[i] == timepoint[i+1])):
+          return True
+      return False
 
   def sampleBoundary(self, n_bc):
       sample_blocks = self._dim * 2
