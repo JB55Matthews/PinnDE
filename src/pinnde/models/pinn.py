@@ -131,7 +131,7 @@ class pinn(model):
 
         for (clps, bcs) in ds:
 
-          CLPloss, BCloss, grads = pinnTrainSteps.trainStep(eqns, clps, bcs, self._network, self._dim, self._bdry_type)
+          CLPloss, BCloss, grads = pinnTrainSteps.trainStep(eqns, clps, bcs, self._network, self._boundaries)
           opt.apply_gradients(zip(grads, self._network.trainable_variables))
           n_batches += 1
           epoch_loss[i] += CLPloss + BCloss
@@ -178,7 +178,7 @@ class pinn(model):
         for (clps, bcs, ics) in ds:
           
           CLPloss, BCloss, ICloss, grads = pinnTrainSteps.trainStepTime(eqns, clps, bcs, ics, self._network, 
-                                                                      self._dim, self._bdry_type, self._t_orders)
+                                                                      self._boundaries, self._t_orders)
           opt.apply_gradients(zip(grads, self._network.trainable_variables))
           n_batches += 1
           epoch_loss[i] += CLPloss + BCloss

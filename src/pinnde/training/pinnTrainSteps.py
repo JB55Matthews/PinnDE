@@ -2,7 +2,12 @@ import tensorflow as tf
 import numpy as np
 import ast
 
-def trainStep(eqns, clps, bcs, network, dim, bdry_type):
+def trainStep(eqns, clps, bcs, network, boundary):
+    dim = boundary.get_domain().get_dim()
+    bdry_type = boundary.get_bdry_type()
+    bdry_components = boundary.get_domain().get_bdry_components()
+    bdry_component_sizes = boundary.get_domain().get_bdry_component_size()
+
     clps_group = []
     for i in range(dim):
         globals()[f"x{i+1}_clp"] = clps[:,i:i+1]
@@ -42,14 +47,36 @@ def trainStep(eqns, clps, bcs, network, dim, bdry_type):
         if bdry_type == 1:
             BCloss = tf.cast(0, tf.float32)
            
-
+        # dirichlet
         elif bdry_type == 2:
             u_bc_pred = network(bcs_group)
             u_bcs = tf.cast(u_bcs, tf.float32)
             BCloss = tf.reduce_mean(tf.square(u_bcs-u_bc_pred))
 
+        # neumann
         elif bdry_type == 3:
-            pass
+            with tf.GradientTape(persistent=True) as tape3:
+                for col in bcs_group:
+                    tape3.watch(col)
+                u_bc_pred = network(bcs_group)
+
+                tosort = bcs[:, 0]
+                sorted = tf.argsort(tosort)
+                bcs = tf.gather(bcs, sorted)
+                for i in range(1, dim):
+                    upper = bcs[:(2*i-1)*bdry_component_sizes]
+                    lower = bcs[(np.shape(bcs)[0]-bdry_component_sizes):]
+                    a = bcs[(2*i-1)*bdry_component_sizes:(np.shape(bcs)[0]-bdry_component_sizes)]
+                    tosort = a[:, i]
+                    sorted = tf.argsort(tosort)
+                    a = tf.gather(a, sorted)
+                    bcs = tf.concat([upper, lower, a], axis=0)
+                u_bcs = bcs[:, -1:]
+
+                for i in range(dim):
+                    du_bc_pred = tf.cast(tape3.gradient(u_bc_pred, bcs_group[i]), tf.float32)
+                    BCloss += tf.reduce_mean(tf.square(du_bc_pred[i*2*bdry_component_sizes:(i+1)*2*bdry_component_sizes] - 
+                                                       tf.cast(u_bcs[i*2*bdry_component_sizes:(i+1)*2*bdry_component_sizes], tf.float32)))
         
         loss = CLPloss + BCloss
     
@@ -57,7 +84,11 @@ def trainStep(eqns, clps, bcs, network, dim, bdry_type):
     return CLPloss, BCloss, grads
 
 
-def trainStepTime(eqns, clps, bcs, ics, network, dim, bdry_type, t_orders):
+def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders):
+    dim = boundary.get_domain().get_dim()
+    bdry_type = boundary.get_bdry_type()
+    bdry_components = boundary.get_domain().get_bdry_components()
+    bdry_component_sizes = boundary.get_domain().get_bdry_component_size()
 
     t_clp = clps[:,0:1]
     clps_group = [t_clp]
@@ -113,23 +144,45 @@ def trainStepTime(eqns, clps, bcs, ics, network, dim, bdry_type, t_orders):
         eqnparse = eval(compile(parse_tree, "<string>", "eval"))
         CLPloss += tf.reduce_mean(tf.square(eqnparse))
         CLPloss = tf.cast(CLPloss, tf.float32)
-
+        
         BCloss = 0
+
         # periodic
         if bdry_type == 1:
             BCloss = tf.cast(0, tf.float32)
             
-
+        # dirichlet
         elif bdry_type == 2:
-            # print(bcs)
-            # print("break")
-            # print(bcs_group)
             u_bc_pred = network(bcs_group)
             u_bcs = tf.cast(u_bcs, tf.float32)
             BCloss = tf.reduce_mean(tf.square(u_bcs-u_bc_pred))
 
+        # neumann
         elif bdry_type == 3:
-            pass
+            with tf.GradientTape(persistent=True) as tape3:
+                for col in bcs_group:
+                    tape3.watch(col)
+                u_bc_pred = network(bcs_group)
+
+                tosort = bcs[:, 1]
+                sorted = tf.argsort(tosort)
+                bcs = tf.gather(bcs, sorted)
+                for i in range(1, dim):
+                    upper = bcs[:(2*i-1)*bdry_component_sizes]
+                    lower = bcs[(np.shape(bcs)[0]-bdry_component_sizes):]
+                    a = bcs[(2*i-1)*bdry_component_sizes:(np.shape(bcs)[0]-bdry_component_sizes)]
+                    tosort = a[:, i+1]
+                    sorted = tf.argsort(tosort)
+                    a = tf.gather(a, sorted)
+                    bcs = tf.concat([upper, lower, a], axis=0)
+                u_bcs = bcs[:, -1:]
+                print(bcs)
+
+                for i in range(dim):
+                    du_bc_pred = tf.cast(tape3.gradient(u_bc_pred, bcs_group[i+1]), tf.float32)
+                    BCloss += tf.reduce_mean(tf.square(du_bc_pred[i*2*bdry_component_sizes:(i+1)*2*bdry_component_sizes] - 
+                                                       tf.cast(u_bcs[i*2*bdry_component_sizes:(i+1)*2*bdry_component_sizes], tf.float32)))
+    
 
         ICloss = 0
         with tf.GradientTape(persistent=True) as tape2:

@@ -32,7 +32,7 @@ bound = p.boundaries.periodic(tre)
 inits = p.initials.initials(tre, [lambda x: tf.cos(np.pi*x)])
 dat = p.data.timededata(tre, bound, inits, 10000, 100, 400)
 mymodel = p.models.pinn(dat, ["ut+ux1"])
-mymodel.train(1200)
+mymodel.train(400)
 p.plotters.plot_solution_prediction_time1D(mymodel)
 p.plotters.plot_epoch_loss(mymodel)
 
@@ -40,10 +40,9 @@ p.plotters.plot_epoch_loss(mymodel)
 # tre = p.domain.Time_NRect(1, [0], [1], [0,1])
 # bound = p.boundaries.dirichlet(tre, [lambda t, x1: 0+t*0 ])
 # inits = p.initials.initials(tre, [lambda x1: tf.sin(np.pi*x1)])
-# dat = p.data.timededata(tre, bound, inits, 10000, 600, 400)
+# dat = p.data.timededata(tre, bound, inits, 10000, 10, 10)
 # mymodel = p.models.pinn(dat, ["0.08*ux1x1 - ut"])
-# epochs = 300
-# mymodel.train(epochs)
+# mymodel.train(1)
 # p.plotters.plot_solution_prediction_time1D(mymodel)
 # p.plotters.plot_epoch_loss(mymodel)
 
@@ -67,11 +66,21 @@ p.plotters.plot_epoch_loss(mymodel)
 # tre = p.domain.Time_NRect(2, [0, 0], [1, 1], [0,1])
 # bound = p.boundaries.dirichlet(tre, [lambda t, x1, x2: 0+t*0 ])
 # inits = p.initials.initials(tre, [lambda x1, x2: tf.sin(np.pi*x1)*tf.sin(np.pi*x2)])
-# dat = p.data.timededata(tre, bound, inits, 12000, 1000, 1000)
+# dat = p.data.timededata(tre, bound, inits, 12000, 10, 10)
 # mymodel = p.models.pinn(dat, ["0.08*ux1x1 + 0.08*ux2x2 - ut"])
-# mymodel.train(2000)
+# mymodel.train(1)
 
 # p.plotters.plot_solution_prediction_time2D(mymodel)
 # p.plotters.plot_epoch_loss(mymodel)
+
+
+# test
+# tre = p.domain.NRect(4, [-1, -3, -2, -4], [1, 3, 2, 4])
+# bound = p.boundaries.neumann(tre, [lambda t, x1, x2, x3: 4+t*0, lambda t, x1, x2, x3: 5+t*0, lambda t, x1, x2, x3: 6+t*0, lambda t, x1, x2, x3: 7+t*0, lambda t, x1, x2, x3: 8+t*0, 
+#                                      lambda t, x1, x2, x3: 9+t*0, lambda t, x1, x2, x3: 10+t*0, lambda t, x1, x2, x3: 11+t*0])
+# # inits = p.initials.initials(tre, [lambda x1, x2, x3, x4: tf.sin(np.pi*x1)*tf.sin(np.pi*x2)])
+# dat = p.data.dedata(tre, bound, 12000, 16)
+# mymodel = p.models.pinn(dat, ["0.08*ux1x1 + 0.08*ux2x2"])
+# mymodel.train(1)
 
 # -------------
