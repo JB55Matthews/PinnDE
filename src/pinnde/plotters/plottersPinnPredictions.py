@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 def plot_solution_prediction_time1D(model):
+    eqns = model.get_eqns()
     network = model.get_network()
     domain = model.get_domain()
     time_range = domain.get_timeRange()
@@ -12,16 +13,29 @@ def plot_solution_prediction_time1D(model):
                        np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], 200), indexing='ij')
     
     sols = network([np.expand_dims(T.flatten(), axis=1), np.expand_dims(X.flatten(), axis=1)])
-    sols = np.reshape(sols, (200, 200))
 
-    plt.figure()
-    plt.contourf(T, X, sols, 200, cmap=plt.cm.jet)
-    plt.title('Neural network solution')
-    plt.xlabel('t')
-    plt.ylabel('x1')
-    plt.colorbar()
-    plt.savefig("PDE-solution-pred")
-    plt.clf()
+    if len(eqns) == 1:
+        sols = np.reshape(sols, (200, 200))
+        plt.figure()
+        plt.contourf(T, X, sols, 200, cmap=plt.cm.jet)
+        plt.title('Neural network solution')
+        plt.xlabel('t')
+        plt.ylabel('x1')
+        plt.colorbar()
+        plt.savefig("PDE-solution-pred")
+        plt.clf()
+
+    elif len(eqns) > 1:
+        for e in range(len(eqns)):
+            globals()[f"sols{e+1}"] = np.reshape(sols[e], (200, 200))
+            plt.figure()
+            plt.contourf(T, X, globals()[f"sols{e+1}"], 200, cmap=plt.cm.jet)
+            plt.title(f'Neural network solution - u{e+1}')
+            plt.xlabel('t')
+            plt.ylabel('x1')
+            plt.colorbar()
+            plt.savefig(f"PDE-solution-pred-u{e+1}")
+            plt.clf()
     return
 
 def plot_solution_prediction_2D(model):
@@ -111,12 +125,14 @@ def plot_solution_prediction_2D(model):
 #     return
 
 def plot_solution_prediction_time2D(model):
+    eqns = model.get_eqns()
     network = model.get_network()
     domain = model.get_domain()
     time_range = domain.get_timeRange()
     interval_dist = (time_range[1] - time_range[0])/3
     intervals = [time_range[0], time_range[0]+interval_dist, 
                 time_range[0]+2*interval_dist, time_range[1]]
+
 
     m = 200  # Grid resolution
     

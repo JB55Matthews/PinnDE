@@ -52,7 +52,7 @@ class initials():
       next_points = func(*func_points)
       points = np.column_stack([points, next_points])
 
-    points[:, 0] = 0
+    points[:, 0] = self._domain.get_timeRange()[0]
     # print(points)
     # time_points = self._domain.get_timeRange()[0] + 0*lhs(1, n_iv).astype(np.float32)
     # points = np.column_stack((time_points, points))

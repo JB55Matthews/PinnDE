@@ -93,6 +93,9 @@ class pinn(model):
 
     def get_boundaries(self):
       return self._boundaries
+    
+    def get_eqns(self):
+      return self._eqns
   
 
     def train(self, epochs, opt="adam", meta="false", adapt_pt="false"):

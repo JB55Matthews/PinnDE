@@ -77,7 +77,12 @@ def trainStep(eqns, clps, bcs, network, boundary):
                     du_bc_pred = tf.cast(tape3.gradient(u_bc_pred, bcs_group[i]), tf.float32)
                     BCloss += tf.reduce_mean(tf.square(du_bc_pred[i*2*bdry_component_sizes:(i+1)*2*bdry_component_sizes] - 
                                                        tf.cast(u_bcs[i*2*bdry_component_sizes:(i+1)*2*bdry_component_sizes], tf.float32)))
-        
+
+        # ode
+        elif bdry_type == 4:
+            pass
+
+
         loss = CLPloss + BCloss
     
     grads = tape.gradient(loss, network.trainable_variables)
@@ -100,14 +105,15 @@ def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders):
     maxi = 0
     ics_group = [t_ics]
     for i in range(dim):
-        globals()[f"x{i+1}_ics"] = ics[:,i+1:i+2]
-        ics_group.append(globals()[f"x{i+1}_ics"])
+        # globals()[f"x{i+1}_ics"] = ics[:,i+1:i+2]
+        ics_group.append([ics[:,i+1:i+2]])
         maxi = i+1
 
-    for i in range(maxi, maxi+t_orders[0]):
-        globals()[f"u{i+1}_ics"] = ics[:,i+1:i+2]
-        ics_group.append(globals()[f"u{i+1}_ics"])
-    
+    for e in range(len(eqns)):
+        for i in range(maxi, maxi+t_orders[e]):
+            # globals()[f"u{i}_ics"] = ics[:,i+1:i+2]
+            ics_group.append([ics[:,i+1:i+2]])
+            maxi += 1
 
     t_bcs = bcs[:,0:1]
     u_bcs = bcs[:,-1:]
@@ -127,23 +133,39 @@ def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders):
             for col in ics_group:
                 tape1.watch(col)
             
-            u = tf.cast(network(clps_group), tf.float32)
-            ut = tf.cast(tape1.gradient(u, clps_group[0]), tf.float32)
-            utt = tf.cast(tape1.gradient(ut, clps_group[0]), tf.float32)
-            uttt = tf.cast(tape1.gradient(utt, clps_group[0]), tf.float32)
-            for i in range(dim):
-                globals()[f"x{i+1}"] = tf.cast(clps_group[i+1], tf.float32)
-                globals()[f"ux{i+1}"] = tf.cast(tape1.gradient(u, clps_group[i+1]), tf.float32)
-                globals()[f"ux{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}"], clps_group[i+1]), tf.float32)
-                globals()[f"ux{i+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}x{i+1}"], clps_group[i+1]), tf.float32)
+            if (len(eqns)) == 1:
+                u = tf.cast(network(clps_group), tf.float32)
+                ut = tf.cast(tape1.gradient(u, clps_group[0]), tf.float32)
+                utt = tf.cast(tape1.gradient(ut, clps_group[0]), tf.float32)
+                uttt = tf.cast(tape1.gradient(utt, clps_group[0]), tf.float32)
+                for i in range(dim):
+                    globals()[f"x{i+1}"] = tf.cast(clps_group[i+1], tf.float32)
+                    globals()[f"ux{i+1}"] = tf.cast(tape1.gradient(u, clps_group[i+1]), tf.float32)
+                    globals()[f"ux{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}"], clps_group[i+1]), tf.float32)
+                    globals()[f"ux{i+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}x{i+1}"], clps_group[i+1]), tf.float32)
+            
+            elif len(eqns) > 1:
+                for e in range(len(eqns)):
+                    globals()[f"u{e+1}"] = tf.cast(network(clps_group), tf.float32)[e]
+                    globals()[f"u{e+1}t"] = tf.cast(tape1.gradient(globals()[f"u{e+1}"], clps_group[0]), tf.float32)
+                    globals()[f"u{e+1}tt"] = tf.cast(tape1.gradient(globals()[f"u{e+1}t"], clps_group[0]), tf.float32)
+                    globals()[f"u{e+1}ttt"] = tf.cast(tape1.gradient(globals()[f"u{e+1}tt"], clps_group[0]), tf.float32)
+                    for i in range(dim):
+                        globals()[f"x{i+1}"] = tf.cast(clps_group[i+1], tf.float32)
+                        globals()[f"u{e+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"u{e+1}"], clps_group[i+1]), tf.float32)
+                        globals()[f"u{e+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"u{e+1}x{i+1}"], clps_group[i+1]), tf.float32)
+                        globals()[f"u{e+1}x{i+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"u{e+1}x{i+1}x{i+1}"], clps_group[i+1]), tf.float32)
+
 
         t = tf.cast(clps_group[0], tf.float32)
 
         CLPloss = 0
-        parse_tree = ast.parse(eqns[0], mode = "eval")
-        eqnparse = eval(compile(parse_tree, "<string>", "eval"))
-        CLPloss += tf.reduce_mean(tf.square(eqnparse))
-        CLPloss = tf.cast(CLPloss, tf.float32)
+        for e in range(len(eqns)):
+            parse_tree = ast.parse(eqns[e], mode = "eval")
+            eqnparse = eval(compile(parse_tree, "<string>", "eval"))
+            # print(tf.reduce_mean(tf.square(eqnparse)))
+            CLPloss += tf.reduce_mean(tf.square(eqnparse))
+            CLPloss = tf.cast(CLPloss, tf.float32)
         
         BCloss = 0
 
@@ -176,12 +198,15 @@ def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders):
                     a = tf.gather(a, sorted)
                     bcs = tf.concat([upper, lower, a], axis=0)
                 u_bcs = bcs[:, -1:]
-                print(bcs)
 
                 for i in range(dim):
                     du_bc_pred = tf.cast(tape3.gradient(u_bc_pred, bcs_group[i+1]), tf.float32)
                     BCloss += tf.reduce_mean(tf.square(du_bc_pred[i*2*bdry_component_sizes:(i+1)*2*bdry_component_sizes] - 
                                                        tf.cast(u_bcs[i*2*bdry_component_sizes:(i+1)*2*bdry_component_sizes], tf.float32)))
+                    
+        # ode
+        elif bdry_type == 4:
+            pass
     
 
         ICloss = 0
@@ -189,14 +214,21 @@ def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders):
             for col in ics_group:
                 tape2.watch(col)
 
-            u_init_pred = network(ics_group[:dim+1])
-            
-            ICloss = tf.reduce_mean(tf.square(u_init_pred - tf.cast(ics_group[dim+1], tf.float32)))
-        
-            for i in range(t_orders[0]-1):
-                next_pred = tf.cast(tape2.gradient(u_init_pred, ics_group[0]), tf.float32)
-                ICloss += tf.reduce_mean(tf.square(next_pred - tf.cast(ics_group[(dim+1)+(i+1)], tf.float32)))
-                u_init_pred = next_pred
+            dim_iter = dim
+            for e in range(len(eqns)):
+                if (len(eqns) == 1):
+                    u_init_pred = network(ics_group[:dim+1])
+                else:
+                    u_init_pred = network(ics_group[:dim+1])[e]
+
+                ICloss += tf.reduce_mean(tf.square(u_init_pred - tf.cast(ics_group[dim_iter+1], tf.float32)))
+                dim_iter += 1
+
+                for i in range(t_orders[e]-1):
+                    next_pred = tf.cast(tape2.gradient(u_init_pred, ics_group[0]), tf.float32)
+                    ICloss += tf.reduce_mean(tf.square(next_pred - tf.cast(ics_group[(dim_iter+1)], tf.float32)))
+                    u_init_pred = next_pred
+                    dim_iter += 1
         
     
         loss = CLPloss + BCloss + ICloss

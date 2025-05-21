@@ -7,6 +7,7 @@ class boundaries(ABC):
   # periodic = 1
   # dirichlet = 2
   # neumann = 3
+  # odeicbc = 4
 
   def __init__(self, domain, type):
     self._domain = domain
