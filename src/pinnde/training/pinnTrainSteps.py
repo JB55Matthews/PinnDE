@@ -3,6 +3,7 @@ import numpy as np
 import ast
 
 def trainStep(eqns, clps, bcs, network, boundary):
+    eqns = network.get_eqns()
     dim = boundary.get_domain().get_dim()
     bdry_type = boundary.get_bdry_type()
     bdry_components = boundary.get_domain().get_bdry_components()
@@ -28,19 +29,30 @@ def trainStep(eqns, clps, bcs, network, boundary):
             for col in bcs_group:
                 tape1.watch(col)
 
-            u = tf.cast(network(clps_group), tf.float32)
-    
-            for i in range(dim):
-                globals()[f"x{i+1}"] = tf.cast(clps_group[i], tf.float32)
-                globals()[f"ux{i+1}"] = tf.cast(tape1.gradient(u, clps_group[i]), tf.float32)
-                globals()[f"ux{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}"], clps_group[i]), tf.float32)
-                globals()[f"ux{i+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}x{i+1}"], clps_group[i]), tf.float32)
+            if len(eqns) == 1:
+                u = tf.cast(network(clps_group), tf.float32)
+                for i in range(dim):
+                    globals()[f"x{i+1}"] = tf.cast(clps_group[i], tf.float32)
+                    globals()[f"ux{i+1}"] = tf.cast(tape1.gradient(u, clps_group[i]), tf.float32)
+                    globals()[f"ux{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}"], clps_group[i]), tf.float32)
+                    globals()[f"ux{i+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"ux{i+1}x{i+1}"], clps_group[i]), tf.float32)
+            
+            elif len(eqns) > 1:
+                for e in range(len(eqns)):
+                    globals()[f"u{e+1}"] = tf.cast(network(clps_group), tf.float32)[e]
+                    for i in range(dim):
+                        globals()[f"x{i+1}"] = tf.cast(clps_group[i], tf.float32)
+                        globals()[f"u{e+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"u{e+1}"], clps_group[i]), tf.float32)
+                        globals()[f"u{e+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"u{e+1}x{i+1}"], clps_group[i]), tf.float32)
+                        globals()[f"u{e+1}x{i+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"u{e+1}x{i+1}x{i+1}"], clps_group[i]), tf.float32)
 
         CLPloss = 0
-        parse_tree = ast.parse(eqns[0], mode = "eval")
-        eqnparse = eval(compile(parse_tree, "<string>", "eval"))
-        CLPloss += tf.reduce_mean(tf.square(eqnparse))
-        CLPloss = tf.cast(CLPloss, tf.float32)
+        for e in range(len(eqns)):
+            parse_tree = ast.parse(eqns[e], mode = "eval")
+            eqnparse = eval(compile(parse_tree, "<string>", "eval"))
+            # print(tf.reduce_mean(tf.square(eqnparse)))
+            CLPloss += tf.reduce_mean(tf.square(eqnparse))
+            CLPloss = tf.cast(CLPloss, tf.float32)
 
         BCloss = 0
         # periodic

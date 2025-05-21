@@ -41,21 +41,36 @@ def plot_solution_prediction_time1D(model):
 def plot_solution_prediction_2D(model):
     network = model.get_network()
     domain = model.get_domain()
+    eqns = model.get_eqns()
     
     X1, X2 = np.meshgrid(np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], 200), 
                          np.linspace(domain.get_min_dim_vals()[1], domain.get_max_dim_vals()[1], 200), indexing='ij')
     
     sols = network([np.expand_dims(X1.flatten(), axis=1), np.expand_dims(X2.flatten(), axis=1)])
-    sols = np.reshape(sols, (200, 200))
 
-    plt.figure()
-    plt.contourf(X1, X2, sols, 200, cmap=plt.cm.jet)
-    plt.title('Neural network solution')
-    plt.xlabel('x1')
-    plt.ylabel('x2')
-    plt.colorbar()
-    plt.savefig("PDE-solution-pred")
-    plt.clf()
+    if len(eqns) == 1:
+        sols = np.reshape(sols, (200, 200))
+
+        plt.figure()
+        plt.contourf(X1, X2, sols, 200, cmap=plt.cm.jet)
+        plt.title('Neural network solution')
+        plt.xlabel('x1')
+        plt.ylabel('x2')
+        plt.colorbar()
+        plt.savefig("PDE-solution-pred")
+        plt.clf()
+    
+    elif len(eqns) > 1:
+        for e in range(len(eqns)):
+            globals()[f"sols{e+1}"] = np.reshape(sols[e], (200, 200))
+            plt.figure()
+            plt.contourf(X1, X2, globals()[f"sols{e+1}"], 200, cmap=plt.cm.jet)
+            plt.title(f'Neural network solution - u{e+1}')
+            plt.xlabel('x1')
+            plt.ylabel('x2')
+            plt.colorbar()
+            plt.savefig(f"PDE-solution-pred-u{e+1}")
+            plt.clf()
     return
 
 # def plot_solution_prediction_time2D(model):
@@ -148,50 +163,100 @@ def plot_solution_prediction_time2D(model):
     mask = np.array([domain.isInside(pt) for pt in points])
     mask = mask.reshape(X1.shape)
 
-    max_val = -np.inf
-    min_val = np.inf
-    sols = []
-    
-    for i in range(4):
-        # Get predictions
-        t = np.full_like(X1.flatten(), intervals[i])
-        sol_pred = network([t[:, None], 
-                           X1.flatten()[:, None], 
-                           X2.flatten()[:, None]])
-        sol_pred = sol_pred.numpy().reshape(X1.shape)
+    if len(eqns) == 1:
+        max_val = -np.inf
+        min_val = np.inf
+        sols = []
         
-        # Apply domain mask
-        sol_pred[~mask] = np.nan  # Mask outside domain
+        for i in range(4):
+            # Get predictions
+            t = np.full_like(X1.flatten(), intervals[i])
+            sol_pred = network([t[:, None], 
+                            X1.flatten()[:, None], 
+                            X2.flatten()[:, None]])
+            sol_pred = sol_pred.numpy().reshape(X1.shape)
+            
+            # Apply domain mask
+            sol_pred[~mask] = np.nan  # Mask outside domain
+            
+            sols.append(sol_pred)
+            current_max = np.nanmax(sol_pred)
+            current_min = np.nanmin(sol_pred)
+            if current_max > max_val:
+                max_val = current_max
+            if current_min < min_val:
+                min_val = current_min
+
+        # Plotting setup
+        fig, axes = plt.subplots(2, 2, gridspec_kw={'hspace': 0.5, 'wspace': 0.4})
+        normalizer = Normalize(min_val, max_val)
+        im = cm.ScalarMappable(norm=normalizer, cmap=plt.cm.jet)
+
+        # Plot each time step
+        for i, ax in enumerate(axes.flat):
+            contour = ax.contourf(X1, X2, sols[i], 200, 
+                                cmap=plt.cm.jet, norm=normalizer)
+            ax.set_title(f"t={intervals[i]:.2f}")
+            ax.set_xlabel("x1")
+            ax.set_ylabel("x2")
+            ax.set_aspect('equal')
+            ax.set_xlim(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0])
+            ax.set_ylim(domain.get_min_dim_vals()[1], domain.get_max_dim_vals()[1])
+
+        # Add colorbar and titles
+        fig.colorbar(im, ax=axes.ravel().tolist(), pad=0.08)
+        fig.suptitle('Neural network solution', fontsize=14, y=0.98)
+        fig.tight_layout(rect=[0, 0, 1, 0.92])
         
-        sols.append(sol_pred)
-        current_max = np.nanmax(sol_pred)
-        current_min = np.nanmin(sol_pred)
-        if current_max > max_val:
-            max_val = current_max
-        if current_min < min_val:
-            min_val = current_min
+        plt.savefig("PDE-solution-pred")
+        plt.clf()
 
-    # Plotting setup
-    fig, axes = plt.subplots(2, 2, gridspec_kw={'hspace': 0.5, 'wspace': 0.4})
-    normalizer = Normalize(min_val, max_val)
-    im = cm.ScalarMappable(norm=normalizer, cmap=plt.cm.jet)
+    elif len(eqns) > 1:
+        for e in range(len(eqns)):
+            max_val = -np.inf
+            min_val = np.inf
+            sols = []
+            
+            for i in range(4):
+                # Get predictions
+                t = np.full_like(X1.flatten(), intervals[i])
+                sol_pred = network([t[:, None], 
+                                X1.flatten()[:, None], 
+                                X2.flatten()[:, None]])[e]
+                sol_pred = sol_pred.numpy().reshape(X1.shape)
+                
+                # Apply domain mask
+                sol_pred[~mask] = np.nan  # Mask outside domain
+                
+                sols.append(sol_pred)
+                current_max = np.nanmax(sol_pred)
+                current_min = np.nanmin(sol_pred)
+                if current_max > max_val:
+                    max_val = current_max
+                if current_min < min_val:
+                    min_val = current_min
 
-    # Plot each time step
-    for i, ax in enumerate(axes.flat):
-        contour = ax.contourf(X1, X2, sols[i], 200, 
-                             cmap=plt.cm.jet, norm=normalizer)
-        ax.set_title(f"t={intervals[i]:.2f}")
-        ax.set_xlabel("x1")
-        ax.set_ylabel("x2")
-        ax.set_aspect('equal')
-        ax.set_xlim(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0])
-        ax.set_ylim(domain.get_min_dim_vals()[1], domain.get_max_dim_vals()[1])
+            # Plotting setup
+            fig, axes = plt.subplots(2, 2, gridspec_kw={'hspace': 0.5, 'wspace': 0.4})
+            normalizer = Normalize(min_val, max_val)
+            im = cm.ScalarMappable(norm=normalizer, cmap=plt.cm.jet)
 
-    # Add colorbar and titles
-    fig.colorbar(im, ax=axes.ravel().tolist(), pad=0.08)
-    fig.suptitle('Neural network solution', fontsize=14, y=0.98)
-    fig.tight_layout(rect=[0, 0, 1, 0.92])
-    
-    plt.savefig("PDE-solution-pred")
-    plt.clf()
+            # Plot each time step
+            for i, ax in enumerate(axes.flat):
+                contour = ax.contourf(X1, X2, sols[i], 200, 
+                                    cmap=plt.cm.jet, norm=normalizer)
+                ax.set_title(f"t={intervals[i]:.2f}")
+                ax.set_xlabel("x1")
+                ax.set_ylabel("x2")
+                ax.set_aspect('equal')
+                ax.set_xlim(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0])
+                ax.set_ylim(domain.get_min_dim_vals()[1], domain.get_max_dim_vals()[1])
+
+            # Add colorbar and titles
+            fig.colorbar(im, ax=axes.ravel().tolist(), pad=0.08)
+            fig.suptitle(f'Neural network solution - u{e+1}', fontsize=14, y=0.98)
+            fig.tight_layout(rect=[0, 0, 1, 0.92])
+            
+            plt.savefig(f"PDE-solution-pred-u{e+1}")
+            plt.clf()
     return

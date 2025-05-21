@@ -40,9 +40,9 @@ import matplotlib.pyplot as plt
 # tre = p.domain.Time_NRect(1, [0], [1], [0,1])
 # bound = p.boundaries.dirichlet(tre, [lambda t, x1: 0+t*0 ])
 # inits = p.initials.initials(tre, [lambda x1: tf.sin(np.pi*x1)])
-# dat = p.data.timededata(tre, bound, inits, 10000, 10, 10)
+# dat = p.data.timededata(tre, bound, inits, 10000, 800, 600)
 # mymodel = p.models.pinn(dat, ["0.08*ux1x1 - ut"])
-# mymodel.train(1)
+# mymodel.train(800)
 # p.plotters.plot_solution_prediction_time1D(mymodel)
 # p.plotters.plot_epoch_loss(mymodel)
 
@@ -83,6 +83,16 @@ import matplotlib.pyplot as plt
 # p.plotters.plot_epoch_loss(mymodel)
 # p.plotters.plot_solution_prediction_time1D(mymodel)
 
+#Burgers
+# tre = p.domain.Time_NRect(1, [-1], [1], [0,1])
+# bound = p.boundaries.dirichlet(tre, [lambda t, x1: 0+t*0 ])
+# inits = p.initials.initials(tre, [lambda x1: -tf.sin(np.pi*x1)])
+# dat = p.data.timededata(tre, bound, inits, 10000, 600, 400)
+# mymodel = p.models.pinn(dat, ["ut+u*ux1-(0.01/np.pi)*ux1x1"])
+# mymodel.train(500)
+# p.plotters.plot_solution_prediction_time1D(mymodel)
+# p.plotters.plot_epoch_loss(mymodel)
+
 
 # test ode
 # tre = p.domain.NRect(1, [0], [1])
@@ -92,14 +102,21 @@ import matplotlib.pyplot as plt
 # mymodel.train(1)
 
 # test system
+# tre = p.domain.Time_NRect(1, [-1], [1], [0, 1])
+# bound = p.boundaries.periodic(tre)
+# inits = p.initials.initials(tre, [[lambda x1: tf.cos(np.pi*x1)], [lambda x1: tf.cos(np.pi*x1)]])
+# dat = p.data.timededata(tre, bound, inits, 12000, 10, 500)
+# mymodel = p.models.pinn(dat, ["u1t+u1x1", "u2t+u2*u2x1-(-0.0025)*u2x1x1x1"])
+# mymodel.train(1500)
+# p.plotters.plot_epoch_loss(mymodel)
+# p.plotters.plot_solution_prediction_time1D(mymodel)
+
+
 tre = p.domain.Time_NRect(1, [-1], [1], [0, 1])
-bound = p.boundaries.periodic(tre)
-inits = p.initials.initials(tre, [[lambda x1: tf.cos(np.pi*x1)], [lambda x1: tf.cos(np.pi*x1)]])
-# inits = p.initials.initials(tre, [[lambda x1: 5+x1*0], [lambda x1: 6+x1*0]])
-dat = p.data.timededata(tre, bound, inits, 12000, 10, 500)
-mymodel = p.models.pinn(dat, ["u1t+u1x1", "u2t+u2*u2x1-(-0.0025)*u2x1x1x1"])
-# mymodel = p.models.pinn(dat, ["u1t+u1x1", "0.0"])
-# mymodel = p.models.pinn(dat, ["0.0", "u2t+u2*u2x1-(-0.0025)*u2x1x1x1"])
+bound = p.boundaries.dirichlet(tre, [lambda t, x1: 0+t*0])
+inits = p.initials.initials(tre, [[lambda x1: tf.sin((np.pi/2)*x1 + (np.pi/2))], [lambda x1: -tf.sin(np.pi*x1)]])
+dat = p.data.timededata(tre, bound, inits, 12000, 1000, 1000)
+mymodel = p.models.pinn(dat, ["0.08*u1x1x1 - u1t", "u2t+u2*u2x1-(0.01/np.pi)*u2x1x1"])
 mymodel.train(1500)
 p.plotters.plot_epoch_loss(mymodel)
 p.plotters.plot_solution_prediction_time1D(mymodel)
