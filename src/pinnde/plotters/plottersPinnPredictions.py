@@ -3,6 +3,38 @@ from matplotlib.colors import Normalize
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
+def plot_solution_prediction_1D(model):
+    eqns = model.get_eqns()
+    network = model.get_network()
+    domain = model.get_domain()
+
+    t = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], 200)
+    
+    sols = network(np.expand_dims(t, axis=1))
+
+    if len(eqns) == 1:
+        plt.figure()
+        plt.plot(t, sols)
+        plt.title('Neural network solution')
+        plt.grid()
+        plt.xlabel('x1')
+        plt.ylabel('u')
+        plt.savefig("ODE-solution-pred")
+        plt.clf()
+
+    elif len(eqns) > 1:
+        plt.figure()
+        for e in range(len(eqns)):
+            globals()[f"sols{e+1}"] = sols[e]
+            plt.plot(t, globals()[f"sols{e+1}"])
+        plt.title(f'Neural network solution')
+        plt.grid()
+        plt.xlabel('x1')
+        plt.ylabel('u')
+        plt.savefig(f"ODE-solution-pred")
+        plt.clf()
+    return
+
 def plot_solution_prediction_time1D(model):
     eqns = model.get_eqns()
     network = model.get_network()

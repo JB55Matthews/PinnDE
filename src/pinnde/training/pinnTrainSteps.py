@@ -3,7 +3,6 @@ import numpy as np
 import ast
 
 def trainStep(eqns, clps, bcs, network, boundary):
-    eqns = network.get_eqns()
     dim = boundary.get_domain().get_dim()
     bdry_type = boundary.get_bdry_type()
     bdry_components = boundary.get_domain().get_bdry_components()
@@ -61,6 +60,7 @@ def trainStep(eqns, clps, bcs, network, boundary):
            
         # dirichlet
         elif bdry_type == 2:
+            print(bcs_group)
             u_bc_pred = network(bcs_group)
             u_bcs = tf.cast(u_bcs, tf.float32)
             BCloss = tf.reduce_mean(tf.square(u_bcs-u_bc_pred))
@@ -92,8 +92,34 @@ def trainStep(eqns, clps, bcs, network, boundary):
 
         # ode
         elif bdry_type == 4:
-            pass
+            if boundary.get_flag() == "ic":
+                t_orders = boundary.get_orders()
+                t_ics = bcs[:,0:1]
+                maxi = 0
+                ics_group = [t_ics]
+                for e in range(len(eqns)):
+                    for i in range(maxi, maxi+t_orders[e]):
+                        ics_group.append([bcs[:,i+1:i+2]])
+                        maxi += 1
+                with tf.GradientTape(persistent=True) as tape2:
+                    for col in ics_group:
+                        tape2.watch(col)
+                    dim_iter = dim
+                    for e in range(len(eqns)):
+                        if (len(eqns) == 1):
+                            u_init_pred = network(ics_group[:dim])
+                        else:
+                            u_init_pred = network(ics_group[:dim])[e]
+                        BCloss += tf.reduce_mean(tf.square(u_init_pred - tf.cast(ics_group[dim_iter], tf.float32)))
+                        dim_iter += 1
+                        for i in range(t_orders[e]-1):
+                            next_pred = tf.cast(tape2.gradient(u_init_pred, ics_group[0]), tf.float32)
+                            BCloss += tf.reduce_mean(tf.square(next_pred - tf.cast(ics_group[(dim_iter)], tf.float32)))
+                            u_init_pred = next_pred
+                            dim_iter += 1
 
+            elif boundary.get_flag() == "bc":
+                pass
 
         loss = CLPloss + BCloss
     
