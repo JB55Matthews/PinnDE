@@ -1,5 +1,5 @@
 from .model import model
-from ..selectors import pinnSelectors
+from ..selectors import pinnSelectors, constraintSelector
 from ..data import timededata
 from ..training import pinnTrainSteps 
 import tensorflow as tf
@@ -70,7 +70,8 @@ class pinn(model):
           outs.append(out)
 
         if pinnSelectors.pinnSelector(self._constraint)():
-          # hard constrain network
+          if constraintSelector.constraintSelector() != None:
+            out = tf.keras.layers.Lambda(constraintSelector.constraintSelector())([inlist, out])
           pass
 
         model = tf.keras.models.Model(inlist, outs)

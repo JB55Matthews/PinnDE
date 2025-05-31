@@ -26,14 +26,14 @@ import matplotlib.pyplot as plt
 # p.plotters.plot_epoch_loss(mymodel)
 
 # Linear Advection
-# tre = p.domain.Time_NRect(1, [-1], [1], [0,1])
-# bound = p.boundaries.periodic(tre)
-# inits = p.initials.initials(tre, [lambda x1: tf.cos(np.pi*x1)])
-# dat = p.data.timededata(tre, bound, inits, 10000, 100, 400)
-# mymodel = p.models.pinn(dat, ["ut+ux1"])
-# mymodel.train(600)
-# p.plotters.plot_solution_prediction_time1D(mymodel)
-# p.plotters.plot_epoch_loss(mymodel)
+tre = p.domain.Time_NRect(1, [-1], [1], [0,1])
+bound = p.boundaries.periodic(tre)
+inits = p.initials.initials(tre, [lambda x1: tf.cos(np.pi*x1)])
+dat = p.data.timededata(tre, bound, inits, 10000, 10, 100)
+mymodel = p.models.pinn(dat, ["ut+ux1"])
+mymodel.train(300)
+p.plotters.plot_solution_prediction_time1D(mymodel)
+p.plotters.plot_epoch_loss(mymodel)
 
 # Heat
 # tre = p.domain.Time_NRect(1, [0], [1], [0,1])
@@ -94,13 +94,14 @@ import matplotlib.pyplot as plt
 
 
 # test ode
-tre = p.domain.NRect(1, [0], [1])
-cond = p.boundaries.odeicbc(tre, [[0.5, 1], [2]], "ic")
-dat = p.data.dedata(tre, cond, 1000, 100)
-mymodel = p.models.pinn(dat, ["u1x1x1 + u1", "u2x1+u1"])
-mymodel.train(500)
-p.plotters.plot_epoch_loss(mymodel)
-p.plotters.plot_solution_prediction_1D(mymodel)
+# tre = p.domain.NRect(1, [0], [1])
+# cond = p.boundaries.odeicbc(tre, [[0.5, 1], [2]], "ic")
+# # cond = p.boundaries.odeicbc(tre, [[0.5, 1.11, 1, 0.12], [2, 1.12]], "bc")
+# dat = p.data.dedata(tre, cond, 1000, 100)
+# mymodel = p.models.pinn(dat, ["u1x1x1 + u1", "u2x1+u1"])
+# mymodel.train(500)
+# p.plotters.plot_epoch_loss(mymodel)
+# p.plotters.plot_solution_prediction_1D(mymodel)
 
 # test system
 # tre = p.domain.Time_NRect(1, [-1], [1], [0, 1])

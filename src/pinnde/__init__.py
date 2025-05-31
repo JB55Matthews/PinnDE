@@ -4,7 +4,8 @@ __all__ = [
     "models",
     "plotters",
     "initials",
-    "data"
+    "data",
+    "legacy"
 ]
 
 from . import boundaries
@@ -14,3 +15,5 @@ from . import plotters
 from . import data
 
 from . import initials
+
+from . import legacy
