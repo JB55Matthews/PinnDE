@@ -1,6 +1,6 @@
 from .data import data
 
-class dedata(data):
+class pinndata(data):
 
     def __init__(self, domain, boundaries, n_clp=1000, n_bc=100):
         super().__init__(1)

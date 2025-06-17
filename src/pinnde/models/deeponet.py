@@ -5,7 +5,7 @@ from ..training import pinnTrainSteps
 import tensorflow as tf
 import numpy as np
 
-class pinn(model):
+class deeponet(model):
 
     def __init__(self, data, eqns,
                  layers=4, units=60, inner_act="tanh",
