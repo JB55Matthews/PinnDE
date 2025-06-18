@@ -180,7 +180,6 @@ class pinn(model):
         n_batches = 0
 
         for (clps, bcs, ics) in ds:
-          print(ics.shape)
           
           CLPloss, BCloss, ICloss, grads = pinnTrainSteps.trainStepTime(eqns, clps, bcs, ics, self._network, 
                                                                       self._boundaries, self._t_orders)

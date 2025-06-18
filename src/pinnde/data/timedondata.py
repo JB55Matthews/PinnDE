@@ -3,13 +3,12 @@ from .dondata import dondata
 class timedondata(dondata):
 
   def __init__(self, domain, boundaries, initials,
-                 n_clp=1000, n_bc=100, n_ic=100, n_sensors=100):
+                 n_clp=10000, n_bc=600, n_ic=600, n_sensors=1000):
 
       super().__init__(domain, boundaries, n_clp, n_bc, n_sensors)
       self.set_data_type(4)
       self._initials = initials
       self._n_iv = n_ic
-      print(self._n_iv)
       self._icp = initials.sampleInitials(n_ic)
 
   def get_icp(self):

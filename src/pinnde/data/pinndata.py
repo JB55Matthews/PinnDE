@@ -2,7 +2,7 @@ from .data import data
 
 class pinndata(data):
 
-    def __init__(self, domain, boundaries, n_clp=1000, n_bc=100):
+    def __init__(self, domain, boundaries, n_clp=10000, n_bc=600):
         super().__init__(1)
         self._domain = domain
         self._boundaries = boundaries

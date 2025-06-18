@@ -60,7 +60,7 @@ def trainStep(eqns, clps, bcs, network, boundary):
            
         # dirichlet
         elif bdry_type == 2:
-            print(bcs_group)
+
             u_bc_pred = network(bcs_group)
             u_bcs = tf.cast(u_bcs, tf.float32)
             BCloss = tf.reduce_mean(tf.square(u_bcs-u_bc_pred))

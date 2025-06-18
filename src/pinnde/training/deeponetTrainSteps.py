@@ -19,6 +19,9 @@ def trainStep(eqns, clps, bcs, usensors, network, boundary):
         globals()[f"x{i+1}_bc"] = bcs[:,i:i+1]
         bcs_group.append(globals()[f"x{i+1}_bc"])
 
+    clps_group.append(usensors)
+    bcs_group.append(usensors)
+
     # Outer gradient for tuning network parameters
     with tf.GradientTape() as tape:
         # # Inner gradient for derivatives of u wrt x and t
@@ -60,7 +63,6 @@ def trainStep(eqns, clps, bcs, usensors, network, boundary):
            
         # dirichlet
         elif bdry_type == 2:
-            print(bcs_group)
             u_bc_pred = network(bcs_group)
             u_bcs = tf.cast(u_bcs, tf.float32)
             BCloss = tf.reduce_mean(tf.square(u_bcs-u_bc_pred))

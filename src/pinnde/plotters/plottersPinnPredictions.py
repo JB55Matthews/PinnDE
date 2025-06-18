@@ -13,7 +13,16 @@ def plot_solution_prediction_1D(model):
 
     t = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], 200)
     
-    sols = network(np.expand_dims(t, axis=1))
+    if isinstance(model, pinn):
+        sols = network(np.expand_dims(t, axis=1))
+    elif isinstance(model, deeponet):
+        amplitudes = np.random.randn(3, 1)
+        phases = -np.pi*np.random.rand(3, 1) + np.pi/2
+        u = 0.0*t
+        for i in range(3):
+            u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(t, axis=0)+ phases[i])
+        sensors = u.numpy()
+        sols = network([np.expand_dims(t, axis=1), sensors])
 
     if len(eqns) == 1:
         plt.figure()
@@ -91,7 +100,19 @@ def plot_solution_prediction_2D(model):
     X1, X2 = np.meshgrid(np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], 200), 
                          np.linspace(domain.get_min_dim_vals()[1], domain.get_max_dim_vals()[1], 200), indexing='ij')
     
-    sols = network([np.expand_dims(X1.flatten(), axis=1), np.expand_dims(X2.flatten(), axis=1)])
+
+    if isinstance(model, pinn):
+        sols = network([np.expand_dims(X1.flatten(), axis=1), np.expand_dims(X2.flatten(), axis=1)])
+    elif isinstance(model, deeponet):
+        x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
+        y = np.linspace(domain.get_min_dim_vals()[1], domain.get_max_dim_vals()[1], model.get_data().get_n_sensors())
+        amplitudes = np.random.randn(3, 1)
+        phases = -np.pi*np.random.rand(3, 1) + np.pi/2
+        u = 0.0*x
+        for i in range(3):
+            u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])*tf.sin((i+1)*np.expand_dims(y, axis=0)+ phases[i])
+        sensors = u.numpy()
+        sols = network([np.expand_dims(X1.flatten(), axis=1), np.expand_dims(X2.flatten(), axis=1), sensors])
 
     if len(eqns) == 1:
         sols = np.reshape(sols, (200, 200))

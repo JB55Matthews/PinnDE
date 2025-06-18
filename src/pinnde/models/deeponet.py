@@ -126,16 +126,26 @@ class deeponet(model):
       opt = pinnSelectors.pinnSelector(opt)(lr)
       bs_clp, bs_bcp, bs_u = self._data.get_n_clp(), self._data.get_n_bc(), self._data.get_n_sensors()
 
+      # ds_clp = tf.data.Dataset.from_tensor_slices(self._data.get_clp())
+      # ds_clp = ds_clp.cache().shuffle(self._data.get_n_clp()).batch(bs_clp)
+
+      # ds_bc = tf.data.Dataset.from_tensor_slices(self._data.get_bcp())
+      # ds_bc = ds_bc.cache().shuffle(self._data.get_n_bc()).batch(bs_bcp)
+
+      # ds_u = tf.data.Dataset.from_tensor_slices(self._data.get_sensors())
+      # ds_u = ds_u.cache().shuffle(self._data.get_n_sensors()).batch(bs_u)
+
+      # ds = tf.data.Dataset.zip((ds_clp, ds_bc, ds_u))
+      # ds = ds.prefetch(tf.data.experimental.AUTOTUNE)
+
+      N = self._clp.shape[0]
+
       ds_clp = tf.data.Dataset.from_tensor_slices(self._data.get_clp())
-      ds_clp = ds_clp.cache().shuffle(self._data.get_n_clp()).batch(bs_clp)
-
       ds_bc = tf.data.Dataset.from_tensor_slices(self._data.get_bcp())
-      ds_bc = ds_bc.cache().shuffle(self._data.get_n_bc()).batch(bs_bcp)
-
       ds_u = tf.data.Dataset.from_tensor_slices(self._data.get_sensors())
-      ds_u = ds_u.cache().shuffle(self._data.get_n_sensors()).batch(bs_u)
 
       ds = tf.data.Dataset.zip((ds_clp, ds_bc, ds_u))
+      ds = ds.cache().shuffle(N).batch(max(bs_bcp, bs_u))
       ds = ds.prefetch(tf.data.experimental.AUTOTUNE)
 
       epoch_loss = np.zeros(epochs)
@@ -173,7 +183,7 @@ class deeponet(model):
       print(self._clp.shape, self._sensors.shape)
       lr = tf.keras.optimizers.schedules.PolynomialDecay(1e-3, epochs, 1e-4)
       opt = pinnSelectors.pinnSelector(opt)(lr)
-      # bs_clp, bs_bcp, bs_icp, bs_u = self._data.get_n_clp(), self._data.get_n_bc(), self._data.get_n_ic(), self._data.get_n_sensors()
+      bs_clp, bs_bcp, bs_icp, bs_u = self._data.get_n_clp(), self._data.get_n_bc(), self._data.get_n_ic(), self._data.get_n_sensors()
 
       # ds_clp = tf.data.Dataset.from_tensor_slices(self._data.get_clp())
       # ds_clp = ds_clp.cache().shuffle(self._data.get_n_clp()).batch(bs_clp)
@@ -200,7 +210,7 @@ class deeponet(model):
       # print(self._data.get_icp().shape)
 
       ds = tf.data.Dataset.zip((ds_clp, ds_bc, ds_ic, ds_u))
-      ds = ds.cache().shuffle(N).batch(2000)
+      ds = ds.cache().shuffle(N).batch(max(bs_bcp, bs_icp, bs_u))
       ds = ds.prefetch(tf.data.experimental.AUTOTUNE)
 
       # ------

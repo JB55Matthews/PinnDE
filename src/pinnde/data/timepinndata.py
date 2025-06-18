@@ -3,7 +3,7 @@ from .pinndata import pinndata
 class timepinndata(pinndata):
 
   def __init__(self, domain, boundaries, initials,
-                 n_clp=1000, n_bc=100, n_ic=100):
+                 n_clp=10000, n_bc=600, n_ic=600):
 
       super().__init__(domain, boundaries, n_clp, n_bc)
       self.set_data_type(2)
