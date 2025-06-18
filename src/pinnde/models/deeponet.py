@@ -1,7 +1,7 @@
 from .model import model
 from ..selectors import pinnSelectors, constraintSelector
-from ..data import timepinndata
-from ..training import pinnTrainSteps 
+from ..data import timedondata
+from ..training import deeponetTrainSteps 
 import tensorflow as tf
 import numpy as np
 
@@ -17,6 +17,8 @@ class deeponet(model):
         self._boundaries = data.get_boundaries()
         self._clp = data.get_clp()
         self._bcp = data.get_bcp()
+        self._sensors = data.get_sensors()
+        self._n_senors = data.get_n_sensors()
         self._dim = self._domain.get_dim()
         self._bdry_type = self._boundaries.get_bdry_type()
         self._layers = layers
@@ -36,7 +38,7 @@ class deeponet(model):
         self._ic_loss = None
         self._eqns = eqns
 
-        if isinstance(data, timepinndata):
+        if isinstance(data, timedondata):
           self._initials = data.get_initials()
           self._icp = data.get_icp()
           self._t_orders = self._initials.get_orders()
@@ -46,10 +48,15 @@ class deeponet(model):
         inlist = []
         blist = []
 
+        # Branch net
+        inp_u = tf.keras.layers.Input(shape=(self._n_senors,))
+        branch_net = mlp_network(inp_u, self._layers, self._units)
+
+        # Trunk net
         for i in range(n):
             input = tf.keras.layers.Input(shape=(1,))
             # time commponent always is normalized even in periodic
-            if isinstance(data, timepinndata) and (i == 0):
+            if isinstance(data, timedondata) and (i == 0):
               bin = Normalize(pt_mins[i], pt_maxes[i])(input)
             elif (self._boundaries.get_bdry_type() == 1):
               bin = Periodic(pt_mins[i], pt_maxes[i])(input)
@@ -59,22 +66,22 @@ class deeponet(model):
             inlist.append(input)
             blist.append(bin)
 
+        inlist.append(inp_u)
+
         b = tf.keras.layers.Concatenate()(blist)
 
-        for i in range(layers):
-            b = tf.keras.layers.Dense(units, activation=inner_act)(b)
+        # Actual trunk net
+        trunk_net = mlp_network(b, self._layers, self._units)
 
-        outs = []
-        for i in range(len(eqns)):
-          out = tf.keras.layers.Dense(1, activation=out_act)(b)
-          outs.append(out)
+        out = tf.keras.layers.Multiply()([branch_net, trunk_net])
+        out = tf.keras.layers.Dense(1)(out)
 
         if pinnSelectors.pinnSelector(self._constraint)():
           if constraintSelector.constraintSelector() != None:
             out = tf.keras.layers.Lambda(constraintSelector.constraintSelector())([inlist, out])
           pass
 
-        model = tf.keras.models.Model(inlist, outs)
+        model = tf.keras.models.Model(inlist, out)
         model.summary()
 
         self._network = model
@@ -89,8 +96,14 @@ class deeponet(model):
     def get_domain(self):
       return self._domain
     
+    def get_sensors(self):
+      return self._sensors
+    
     def get_epochs(self):
       return self._epochs
+    
+    def get_data(self):
+      return self._data
 
     def get_boundaries(self):
       return self._boundaries
@@ -101,7 +114,7 @@ class deeponet(model):
 
     def train(self, epochs, opt="adam", meta="false", adapt_pt="false"):
       self._epochs = epochs
-      if isinstance(self._data, timepinndata):
+      if isinstance(self._data, timedondata):
         self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
       else:
         self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)      
@@ -111,7 +124,7 @@ class deeponet(model):
 
       lr = tf.keras.optimizers.schedules.PolynomialDecay(1e-3, epochs, 1e-4)
       opt = pinnSelectors.pinnSelector(opt)(lr)
-      bs_clp, bs_bcp = self._data.get_n_clp(), self._data.get_n_bc()
+      bs_clp, bs_bcp, bs_u = self._data.get_n_clp(), self._data.get_n_bc(), self._data.get_n_sensors()
 
       ds_clp = tf.data.Dataset.from_tensor_slices(self._data.get_clp())
       ds_clp = ds_clp.cache().shuffle(self._data.get_n_clp()).batch(bs_clp)
@@ -119,13 +132,16 @@ class deeponet(model):
       ds_bc = tf.data.Dataset.from_tensor_slices(self._data.get_bcp())
       ds_bc = ds_bc.cache().shuffle(self._data.get_n_bc()).batch(bs_bcp)
 
-      ds = tf.data.Dataset.zip((ds_clp, ds_bc))
+      ds_u = tf.data.Dataset.from_tensor_slices(self._data.get_sensors())
+      ds_u = ds_u.cache().shuffle(self._data.get_n_sensors()).batch(bs_u)
+
+      ds = tf.data.Dataset.zip((ds_clp, ds_bc, ds_u))
       ds = ds.prefetch(tf.data.experimental.AUTOTUNE)
 
       epoch_loss = np.zeros(epochs)
       clp_loss = np.zeros(epochs)
       bc_loss = np.zeros(epochs)
-
+      
       BCloss = None
       CLPloss = None
 
@@ -133,9 +149,9 @@ class deeponet(model):
 
         n_batches = 0
 
-        for (clps, bcs) in ds:
+        for (clps, bcs, usensors) in ds:
 
-          CLPloss, BCloss, grads = pinnTrainSteps.trainStep(eqns, clps, bcs, self._network, self._boundaries)
+          CLPloss, BCloss, grads = deeponetTrainSteps.trainStep(eqns, clps, bcs, usensors, self._network, self._boundaries)
           opt.apply_gradients(zip(grads, self._network.trainable_variables))
           n_batches += 1
           epoch_loss[i] += CLPloss + BCloss
@@ -154,21 +170,40 @@ class deeponet(model):
       return
 
     def trainTime(self, eqns, epochs, opt, meta, adapt_pt):
+      print(self._clp.shape, self._sensors.shape)
       lr = tf.keras.optimizers.schedules.PolynomialDecay(1e-3, epochs, 1e-4)
       opt = pinnSelectors.pinnSelector(opt)(lr)
-      bs_clp, bs_bcp, bs_icp = self._data.get_n_clp(), self._data.get_n_bc(), self._data.get_n_ic()
+      # bs_clp, bs_bcp, bs_icp, bs_u = self._data.get_n_clp(), self._data.get_n_bc(), self._data.get_n_ic(), self._data.get_n_sensors()
+
+      # ds_clp = tf.data.Dataset.from_tensor_slices(self._data.get_clp())
+      # ds_clp = ds_clp.cache().shuffle(self._data.get_n_clp()).batch(bs_clp)
+
+      # ds_bc = tf.data.Dataset.from_tensor_slices(self._data.get_bcp())
+      # ds_bc = ds_bc.cache().shuffle(self._data.get_n_bc()).batch(bs_bcp)
+
+      # ds_ic = tf.data.Dataset.from_tensor_slices(self._data.get_icp())
+      # ds_ic = ds_ic.cache().shuffle(self._data.get_n_ic()).batch(bs_icp)
+
+      # ds_u = tf.data.Dataset.from_tensor_slices(self._data.get_sensors())
+      # ds_u = ds_u.cache().shuffle(self._data.get_n_sensors()).batch(bs_u)
+
+      # ds = tf.data.Dataset.zip((ds_clp, ds_bc, ds_ic, ds_u))
+      # ds = ds.prefetch(tf.data.experimental.AUTOTUNE)
+
+      # ------
+      N = self._clp.shape[0]
 
       ds_clp = tf.data.Dataset.from_tensor_slices(self._data.get_clp())
-      ds_clp = ds_clp.cache().shuffle(self._data.get_n_clp()).batch(bs_clp)
-
       ds_bc = tf.data.Dataset.from_tensor_slices(self._data.get_bcp())
-      ds_bc = ds_bc.cache().shuffle(self._data.get_n_bc()).batch(bs_bcp)
-
       ds_ic = tf.data.Dataset.from_tensor_slices(self._data.get_icp())
-      ds_ic = ds_ic.cache().shuffle(self._data.get_n_ic()).batch(bs_icp)
+      ds_u = tf.data.Dataset.from_tensor_slices(self._data.get_sensors())
+      # print(self._data.get_icp().shape)
 
-      ds = tf.data.Dataset.zip((ds_clp, ds_bc, ds_ic))
+      ds = tf.data.Dataset.zip((ds_clp, ds_bc, ds_ic, ds_u))
+      ds = ds.cache().shuffle(N).batch(2000)
       ds = ds.prefetch(tf.data.experimental.AUTOTUNE)
+
+      # ------
 
       epoch_loss = np.zeros(epochs)
       clp_loss = np.zeros(epochs)
@@ -179,9 +214,10 @@ class deeponet(model):
 
         n_batches = 0
 
-        for (clps, bcs, ics) in ds:
+        for (clps, bcs, ics, usensors) in ds:
+          # print(ics.shape)
           
-          CLPloss, BCloss, ICloss, grads = pinnTrainSteps.trainStepTime(eqns, clps, bcs, ics, self._network, 
+          CLPloss, BCloss, ICloss, grads = deeponetTrainSteps.trainStepTime(eqns, clps, bcs, ics, usensors, self._network, 
                                                                       self._boundaries, self._t_orders)
           opt.apply_gradients(zip(grads, self._network.trainable_variables))
           n_batches += 1
@@ -238,3 +274,25 @@ class Periodic(tf.keras.layers.Layer):
 
   def call(self, inputs):
     return tf.concat((tf.cos(2*np.pi*(inputs/(self.xmax - self.xmin))), tf.sin(2*np.pi*(inputs/(self.xmax - self.xmin)))), axis=1)
+
+def mlp_network(inp, n_layers, n_units):
+    """
+    Function which creates simple mlp to be used as basis of trunk and branch nets in DeepONets
+
+    Args:
+        inp (tensor): Input layer data to mlp
+        n_layers (int): Number of network internal layers
+        n_units (int): Number of units per internal network layer
+
+    Returns:
+        out (tensor): Output data from output layer of network
+
+    Models for solving solvePDE_DeepONet_tx equations
+    --------------------------------------
+    """
+
+    h = inp
+    for i in range(n_layers-1):
+        h = tf.keras.layers.Dense(n_units, activation='tanh')(h)
+        out = tf.keras.layers.Dense(n_units, activation='linear')(h)
+    return out

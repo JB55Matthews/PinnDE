@@ -1,7 +1,9 @@
 __all__ = [
     "model",
-    "pinn"
+    "pinn",
+    "deeponet"
 ]
 
 from .model import model
 from .pinn import pinn
+from .deeponet import deeponet

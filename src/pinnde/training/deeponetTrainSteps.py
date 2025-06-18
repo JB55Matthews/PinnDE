@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import ast
 
-def trainStep(eqns, clps, bcs, network, boundary):
+def trainStep(eqns, clps, bcs, usensors, network, boundary):
     dim = boundary.get_domain().get_dim()
     bdry_type = boundary.get_bdry_type()
     bdry_components = boundary.get_domain().get_bdry_components()
@@ -127,7 +127,7 @@ def trainStep(eqns, clps, bcs, network, boundary):
     return CLPloss, BCloss, grads
 
 
-def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders):
+def trainStepTime(eqns, clps, bcs, ics, usensors, network, boundary, t_orders):
     dim = boundary.get_domain().get_dim()
     bdry_type = boundary.get_bdry_type()
     bdry_components = boundary.get_domain().get_bdry_components()
@@ -159,6 +159,9 @@ def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders):
     for i in range(dim):
         globals()[f"x{i+1}_bc"] = bcs[:,i+1:i+2]
         bcs_group.append(globals()[f"x{i+1}_bc"])
+
+    clps_group.append(usensors)
+    bcs_group.append(usensors)
 
     # Outer gradient for tuning network parameters
     with tf.GradientTape() as tape:
@@ -206,7 +209,6 @@ def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders):
             CLPloss = tf.cast(CLPloss, tf.float32)
         
         BCloss = 0
-
         # periodic
         if bdry_type == 1:
             BCloss = tf.cast(0, tf.float32)
@@ -253,13 +255,16 @@ def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders):
                 tape2.watch(col)
 
             dim_iter = dim
-
+            in_group = ics_group[:dim+1]
+            in_group.append(usensors)
             for e in range(len(eqns)):
                 if (len(eqns) == 1):
-                    u_init_pred = network(ics_group[:dim+1])
+                    u_init_pred = network(in_group)
                 else:
-                    u_init_pred = network(ics_group[:dim+1])[e]
-
+                    u_init_pred = network(in_group)[e]
+                # print(u_init_pred)
+                # print(ics_group[dim_iter+1])
+                # print(bcs_group[0])
                 ICloss += tf.reduce_mean(tf.square(u_init_pred - tf.cast(ics_group[dim_iter+1], tf.float32)))
                 dim_iter += 1
 

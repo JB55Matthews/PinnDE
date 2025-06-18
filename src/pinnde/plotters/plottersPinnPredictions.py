@@ -2,6 +2,9 @@ import numpy as np
 from matplotlib.colors import Normalize
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+from ..models.pinn import pinn
+from ..models.deeponet import deeponet
+import tensorflow as tf
 
 def plot_solution_prediction_1D(model):
     eqns = model.get_eqns()
@@ -44,7 +47,17 @@ def plot_solution_prediction_time1D(model):
     T, X = np.meshgrid(np.linspace(time_range[0], time_range[1], 200), 
                        np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], 200), indexing='ij')
     
-    sols = network([np.expand_dims(T.flatten(), axis=1), np.expand_dims(X.flatten(), axis=1)])
+    if (isinstance(model, pinn)):
+        sols = network([np.expand_dims(T.flatten(), axis=1), np.expand_dims(X.flatten(), axis=1)])
+    elif (isinstance(model, deeponet)):
+        x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
+        amplitudes = np.random.randn(3, 1)
+        phases = -np.pi*np.random.rand(3, 1) + np.pi/2
+        u = 0.0*x
+        for i in range(3):
+            u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])
+        sensors = u.numpy()
+        sols = network([np.expand_dims(T.flatten(), axis=1), np.expand_dims(X.flatten(), axis=1), sensors])
 
     if len(eqns) == 1:
         sols = np.reshape(sols, (200, 200))
@@ -203,21 +216,48 @@ def plot_solution_prediction_time2D(model):
         for i in range(4):
             # Get predictions
             t = np.full_like(X1.flatten(), intervals[i])
-            sol_pred = network([t[:, None], 
-                            X1.flatten()[:, None], 
-                            X2.flatten()[:, None]])
-            sol_pred = sol_pred.numpy().reshape(X1.shape)
-            
-            # Apply domain mask
-            sol_pred[~mask] = np.nan  # Mask outside domain
-            
-            sols.append(sol_pred)
-            current_max = np.nanmax(sol_pred)
-            current_min = np.nanmin(sol_pred)
-            if current_max > max_val:
-                max_val = current_max
-            if current_min < min_val:
-                min_val = current_min
+            if isinstance(model, pinn):
+                sol_pred = network([t[:, None], 
+                                X1.flatten()[:, None], 
+                                X2.flatten()[:, None]])
+                sol_pred = sol_pred.numpy().reshape(X1.shape)
+                
+                # Apply domain mask
+                sol_pred[~mask] = np.nan  # Mask outside domain
+                
+                sols.append(sol_pred)
+                current_max = np.nanmax(sol_pred)
+                current_min = np.nanmin(sol_pred)
+                if current_max > max_val:
+                    max_val = current_max
+                if current_min < min_val:
+                    min_val = current_min
+
+            elif isinstance(model, deeponet):
+                x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
+                y = np.linspace(domain.get_min_dim_vals()[1], domain.get_max_dim_vals()[1], model.get_data().get_n_sensors())
+                amplitudes = np.random.randn(3, 1)
+                phases = -np.pi*np.random.rand(3, 1) + np.pi/2
+                u = 0.0*x
+                for i in range(3):
+                    u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])*tf.sin((i+1)*np.expand_dims(y, axis=0)+ phases[i])
+                sensors = u.numpy()
+                sol_pred = network([t[:, None], 
+                                X1.flatten()[:, None], 
+                                X2.flatten()[:, None],
+                                sensors])
+                sol_pred = sol_pred.numpy().reshape(X1.shape)
+                
+                # Apply domain mask
+                sol_pred[~mask] = np.nan  # Mask outside domain
+                
+                sols.append(sol_pred)
+                current_max = np.nanmax(sol_pred)
+                current_min = np.nanmin(sol_pred)
+                if current_max > max_val:
+                    max_val = current_max
+                if current_min < min_val:
+                    min_val = current_min
 
         # Plotting setup
         fig, axes = plt.subplots(2, 2, gridspec_kw={'hspace': 0.5, 'wspace': 0.4})

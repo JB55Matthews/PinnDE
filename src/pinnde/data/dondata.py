@@ -53,3 +53,9 @@ class dondata(data):
 
     def get_n_bc(self):
       return self._n_bc
+    
+    def get_n_sensors(self):
+       return self._n_sensors
+    
+    def get_sensors(self):
+       return self._sensors

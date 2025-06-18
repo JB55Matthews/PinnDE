@@ -129,11 +129,22 @@ import matplotlib.pyplot as plt
 # tre = p.domain.Time_NRect(1, [0], [1], [0,1])
 # bound = p.boundaries.dirichlet(tre, [lambda t, x1: 0+t*0 ])
 # inits = p.initials.initials(tre, [lambda x1: tf.sin(np.pi*x1)])
-# dat = p.data.timedondata(tre, bound, inits, 10, 5, 5, 4)
-# mymodel = p.models.pinn(dat, ["0.08*ux1x1 - ut"])
-# mymodel.train(800)
+# dat = p.data.timedondata(tre, bound, inits, 12000, 1000, 1000, 1000)
+# mymodel = p.models.deeponet(dat, ["0.08*ux1x1 - ut"])
+# mymodel.train(1500)
 # p.plotters.plot_solution_prediction_time1D(mymodel)
 # p.plotters.plot_epoch_loss(mymodel)
+
+# Heat 3D
+# tre = p.domain.Time_NRect(2, [0, 0], [1, 1], [0,1])
+tre = p.domain.Time_NEllipsoid(2, [0.5, 0.5], [0.5, 0.5], [0, 1])
+bound = p.boundaries.dirichlet(tre, [lambda t, x1, x2: 0+t*0 ])
+inits = p.initials.initials(tre, [lambda x1, x2: tf.sin(np.pi*x1)*tf.sin(np.pi*x2)])
+dat = p.data.timedondata(tre, bound, inits, 12000, 2000, 2000, 2000)
+mymodel = p.models.deeponet(dat, ["0.08*ux1x1 + 0.08*ux2x2 - ut"])
+mymodel.train(1500)
+p.plotters.plot_solution_prediction_time2D(mymodel)
+p.plotters.plot_epoch_loss(mymodel)
 
 # Poisson
 # re2 = p.domain.NRect(2, [-1, -1], [1, 1])
@@ -145,12 +156,14 @@ import matplotlib.pyplot as plt
 # p.plotters.plot_epoch_loss(mymodel)
 
 # Linear Advection
-tre = p.domain.Time_NRect(1, [-1], [1], [0,1])
-bound = p.boundaries.periodic(tre)
-inits = p.initials.initials(tre, [lambda x1: tf.cos(np.pi*x1)])
-dat = p.data.timedondata(tre, bound, inits, 10, 10, 100, 4)
-# mymodel = p.models.pinn(dat, ["ut+ux1"])
-# mymodel.train(300)
+# tre = p.domain.Time_NRect(1, [-1], [1], [0,1])
+# bound = p.boundaries.periodic(tre)
+# inits = p.initials.initials(tre, [lambda x1: tf.cos(np.pi*x1)])
+# dat = p.data.timedondata(tre, bound, inits, 12000, 1000, 1000, 1000)
+# mymodel = p.models.deeponet(dat, ["ut+ux1"])
+# # dat = p.data.timepinndata(tre, bound, inits, 12000, 4, 600)
+# # mymodel = p.models.pinn(dat, ["ut+ux1"])
+# mymodel.train(1200)
 # p.plotters.plot_solution_prediction_time1D(mymodel)
 # p.plotters.plot_epoch_loss(mymodel)
 

@@ -30,7 +30,5 @@ import tensorflow as tf
 
 # mymodel.plot_solution_prediction()
 
-import src.pinnde.legacy.PDE.pde_Points as p
-pdes, usensors = p.defineCollocationPoints_DON_2var([0, 1], [0,1], 100, 10, 200, [-2,2])
-print(np.shape(pdes))
-print(np.shape(usensors))
+# import src.pinnde.legacy.PDE.pde_Points as p
+# pdes, usensors = p.defineCollocationPoints_DON_2var([0, 1], [0,1], 100, 10, 200, [-2,2])
