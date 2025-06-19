@@ -12,78 +12,101 @@ nav:
     - PDEs in x and y: Tutorials/Tutorials_PDEs_xy/PDE_xy_tutorials.md
 
   - API:
-    - Main User Functions:
-      - ode_Solvers: MainUserFunctions/ode_Solvers.md
-      - pde_Solvers: MainUserFunctions/pde_Solvers.md
-      - pde_Boundaries_2var: MainUserFunctions/pde_Boundaries_2var.md
-      - pde_Initials: MainUserFunctions/pde_Initials.md
+    - boundaries:
+      - boundaries: boundaries/boundaries.md
+      - periodic: boundaries/periodic.md
+      - dirichlet: boundaries/dirichlet.md
+      - neumann: boundaries/neumann.md
+      - odeicbc: boundaries/odeicbc.md
 
-    - Main Solve Classes:
+    - data:
+      - data: data/data.md
+      - pinndata: data/pinndata.md
+      - timepinndata: data/timepinndata.md
+      - dondata: data/dondata.md
+      - timedondata: data/timedondata.md
     
+    - domain:
+      - domain: domain/domain.md
+      - timedomain: domain/timedomain.md
+      - NRect: domain/NRect.md
+      - Time_NRect: domain/Time_NRect.md
+      - NEllipsoid: domain/NEllipsoid.md
+      - Time_NEllipsoid: domain/Time_NEllipsoid.md
+
+    - legacy:
+      - ode_Solvers: Legacy/ode_Solvers.md
+      - pde_Solvers: Legacy/pde_Solvers.md
+      - pde_Boundaries_2var: Legacy/pde_Boundaries_2var.md
+      - pde_Initials: Legacy/pde_Initials.md
       - ode Solve Classes:
-        - ode_SolveClass: MainSolveClasses/odeSolveClasses/ode_SolveClass.md
-        - ode_SystemSolveClass: MainSolveClasses/odeSolveClasses/ode_SystemSolveClass.md
-        - ode_DeepONetSolveClass: MainSolveClasses/odeSolveClasses/ode_DeepONetSolveClass.md
-        - ode_SystemDeepONetSolveClass: MainSolveClasses/odeSolveClasses/ode_SystemDeepONetSolveClass.md
-
+        - ode_SolveClass: Legacy/odeSolveClasses/ode_SolveClass.md
+        - ode_SystemSolveClass: Legacy/odeSolveClasses/ode_SystemSolveClass.md
+        - ode_DeepONetSolveClass: Legacy/odeSolveClasses/ode_DeepONetSolveClass.md
+        - ode_SystemDeepONetSolveClass: Legacy/odeSolveClasses/ode_SystemDeepONetSolveClass.md
       - pde Solve Classes:
-        - pde_SolveClass_tx: MainSolveClasses/pdeSolveClasses/pde_SolveClass_tx.md
-        - pde_SolveClass_xy: MainSolveClasses/pdeSolveClasses/pde_SolveClass_xy.md
-        - pde_DeepONetSolveClass_tx: MainSolveClasses/pdeSolveClasses/pde_DeepONetSolveClass_tx.md
-        - pde_DeepONetSolveClass_xy: MainSolveClasses/pdeSolveClasses/pde_DeepONetSolveClass_xy.md
-
-    - ODE :
-      - ode_ModelFuncs: ODE/ode_ModelFuncs.md
-      - ode_ParamChecks: ODE/ode_ParamChecks.md
-      - ode_Plotters: ODE/ode_Plotters.md
-      - ode_Points: ODE/ode_Points.md
-      - ode_trainingSelect: ODE/ode_trainingSelect.md
-      - ode_TimeSteppersDeepONet: ODE/ode_TimeSteppersDeepONet.md
+        - pde_SolveClass_tx: Legacy/pdeSolveClasses/pde_SolveClass_tx.md
+        - pde_SolveClass_xy: Legacy/pdeSolveClasses/pde_SolveClass_xy.md
+        - pde_DeepONetSolveClass_tx: Legacy/pdeSolveClasses/pde_DeepONetSolveClass_tx.md
+        - pde_DeepONetSolveClass_xy: Legacy/pdeSolveClasses/pde_DeepONetSolveClass_xy.md
+      - ode_ModelFuncs: Legacy/ode_ModelFuncs.md
+      - ode_ParamChecks: Legacy/ode_ParamChecks.md
+      - ode_Plotters: Legacy/ode_Plotters.md
+      - ode_Points: Legacy/ode_Points.md
+      - ode_trainingSelect: Legacy/ode_trainingSelect.md
+      - ode_TimeSteppersDeepONet: Legacy/ode_TimeSteppersDeepONet.md
       - SpecificTraining : 
         - IVP_Training:
-          - ode_TrainingIVP_soft: ODE/SpecificTraining/IVP_Training/ode_TrainingIVP_soft.md
-          - ode_TrainingIVP_hard: ODE/SpecificTraining/IVP_Training/ode_TrainingIVP_hard.md
-          - ode_Training2SystemIVP_soft: ODE/SpecificTraining/IVP_Training/ode_Training2SystemIVP_soft.md
-          - ode_Training3SystemIVP_soft: ODE/SpecificTraining/IVP_Training/ode_Training3SystemIVP_soft.md
+          - ode_TrainingIVP_soft: Legacy/SpecificTraining/IVP_Training/ode_TrainingIVP_soft.md
+          - ode_TrainingIVP_hard: Legacy/SpecificTraining/IVP_Training/ode_TrainingIVP_hard.md
+          - ode_Training2SystemIVP_soft: Legacy/SpecificTraining/IVP_Training/ode_Training2SystemIVP_soft.md
+          - ode_Training3SystemIVP_soft: Legacy/SpecificTraining/IVP_Training/ode_Training3SystemIVP_soft.md
         - BVP_Training:
-          - ode_TrainingBVP_soft: ODE/SpecificTraining/BVP_Training/ode_TrainingBVP_soft.md
-          - ode_TrainingBVP_Hard: ODE/SpecificTraining/BVP_Training/ode_TrainingBVP_Hard.md
+          - ode_TrainingBVP_soft: Legacy/SpecificTraining/BVP_Training/ode_TrainingBVP_soft.md
+          - ode_TrainingBVP_Hard: Legacy/SpecificTraining/BVP_Training/ode_TrainingBVP_Hard.md
         - DeepONet_Training:
-          - ode_TrainingDeepONetIVP: ODE/SpecificTraining/DeepONet_Training/ode_TrainingDeepONetIVP.md
-          - ode_TrainingDeepONetBVP: ODE/SpecificTraining/DeepONet_Training/ode_TrainingDeepONetBVP.md
-          - ode_TrainingDeepONet_2EqautionSystems: ODE/SpecificTraining/DeepONet_Training/ode_TrainingDeepONet_2EquationSystems.md
-          - ode_TrainingDeepONet_3EqautionSystems: ODE/SpecificTraining/DeepONet_Training/ode_TrainingDeepONet_3EquationSystems.md
-
-    - PDE: 
-      - pde_ParamChecks: PDE/pde_ParamChecks.md
-      - pde_Plotters: PDE/pde_Plotters.md
-      - pde_Points: PDE/pde_Points.md
-      - pde_trainingSelects: PDE/pde_trainingSelect_2var.md
+          - ode_TrainingDeepONetIVP: Legacy/SpecificTraining/DeepONet_Training/ode_TrainingDeepONetIVP.md
+          - ode_TrainingDeepONetBVP: Legacy/SpecificTraining/DeepONet_Training/ode_TrainingDeepONetBVP.md
+          - ode_TrainingDeepONet_2EquationSystems: Legacy/SpecificTraining/DeepONet_Training/ode_TrainingDeepONet_2EquationSystems.md
+          - ode_TrainingDeepONet_3EquationSystems: Legacy/SpecificTraining/DeepONet_Training/ode_TrainingDeepONet_3EquationSystems.md
+      - pde_ParamChecks: Legacy/pde_ParamChecks.md
+      - pde_Plotters: Legacy/pde_Plotters.md
+      - pde_Points: Legacy/pde_Points.md
+      - pde_trainingSelects: Legacy/pde_trainingSelect_2var.md
       - ModelFuncs:
-        - pde_ModelFuncs_2var: PDE/ModelFuncs/pde_ModelFuncs_2var.md
-        - pde_DeepONetModelFuncs_2var: PDE/ModelFuncs/pde_DeepONetModelFuncs_2var.md
-
+        - pde_ModelFuncs_2var: Legacy/ModelFuncs/pde_ModelFuncs_2var.md
+        - pde_DeepONetModelFuncs_2var: Legacy/ModelFuncs/pde_DeepONetModelFuncs_2var.md
       - SpecificTraining_2var:
         - tx_Training:
-          - pde_TrainingICBCP_hard: PDE/SpecificTraining_2var/tx_Training/pde_TrainingICBCP_hard.md
-          - pde_TrainingICBCP_periodic_soft: PDE/SpecificTraining_2var/tx_Training/pde_TrainingICBCP_periodic_soft.md
-          - pde_TrainingICBCP_dirichlet_soft: PDE/SpecificTraining_2var/tx_Training/pde_TrainingICBCP_dirichlet_soft.md
-          - pde_TrainingICBCP_neumann_soft: PDE/SpecificTraining_2var/tx_Training/pde_TrainingICBCP_neumann_soft.md
+          - pde_TrainingICBCP_hard: Legacy/SpecificTraining_2var/tx_Training/pde_TrainingICBCP_hard.md
+          - pde_TrainingICBCP_periodic_soft: Legacy/SpecificTraining_2var/tx_Training/pde_TrainingICBCP_periodic_soft.md
+          - pde_TrainingICBCP_dirichlet_soft: Legacy/SpecificTraining_2var/tx_Training/pde_TrainingICBCP_dirichlet_soft.md
+          - pde_TrainingICBCP_neumann_soft: Legacy/SpecificTraining_2var/tx_Training/pde_TrainingICBCP_neumann_soft.md
         - xy_Training:
-          - pde_TrainingBCP_periodic: PDE/SpecificTraining_2var/xy_Training/pde_TrainingBCP_periodic.md
-          - pde_TrainingBCP_dirichlet_soft: PDE/SpecificTraining_2var/xy_Training/pde_TrainingBCP_dirichlet_soft.md
-          - pde_TrainingBCP_dirichlet_hard: PDE/SpecificTraining_2var/xy_Training/pde_TrainingBCP_dirichlet_hard.md
-          - pde_TrainingBCP_neuamnn_soft: PDE/SpecificTraining_2var/xy_Training/pde_TrainingBCP_neumann_soft.md
+          - pde_TrainingBCP_periodic: Legacy/SpecificTraining_2var/xy_Training/pde_TrainingBCP_periodic.md
+          - pde_TrainingBCP_dirichlet_soft: Legacy/SpecificTraining_2var/xy_Training/pde_TrainingBCP_dirichlet_soft.md
+          - pde_TrainingBCP_dirichlet_hard: Legacy/SpecificTraining_2var/xy_Training/pde_TrainingBCP_dirichlet_hard.md
+          - pde_TrainingBCP_neuamnn_soft: Legacy/SpecificTraining_2var/xy_Training/pde_TrainingBCP_neumann_soft.md
         - tx_DeepONet_Training:
-          - pde_TrainingDeepONetICBCP_periodic_soft: PDE/SpecificTraining_2var/tx_DeepONet_Training/pde_TrainingDeepONetICBCP_periodic_soft.md
-          - pde_TrainingDeepONetICBCP_periodic_hard: PDE/SpecificTraining_2var/tx_DeepONet_Training/pde_TrainingDeepONetICBCP_periodic_hard.md
-          - pde_TrainingDeepONetICBCP_dirichlet_soft: PDE/SpecificTraining_2var/tx_DeepONet_Training/pde_TrainingDeepONetICBCP_dirichlet_soft.md
-          - pde_TrainingDeepONetICBCP_neumann_soft: PDE/SpecificTraining_2var/tx_DeepONet_Training/pde_TrainingDeepONetICBCP_neumann_soft.md
-
+          - pde_TrainingDeepONetICBCP_periodic_soft: Legacy/SpecificTraining_2var/tx_DeepONet_Training/pde_TrainingDeepONetICBCP_periodic_soft.md
+          - pde_TrainingDeepONetICBCP_periodic_hard: Legacy/SpecificTraining_2var/tx_DeepONet_Training/pde_TrainingDeepONetICBCP_periodic_hard.md
+          - pde_TrainingDeepONetICBCP_dirichlet_soft: Legacy/SpecificTraining_2var/tx_DeepONet_Training/pde_TrainingDeepONetICBCP_dirichlet_soft.md
+          - pde_TrainingDeepONetICBCP_neumann_soft: Legacy/SpecificTraining_2var/tx_DeepONet_Training/pde_TrainingDeepONetICBCP_neumann_soft.md
         - xy_DeepONet_Training:
-          - pde_TrainingDeepONetBCP_hard: PDE/SpecificTraining_2var/xy_DeepONet_Training/pde_TrainingDeepONetBCP_hard.md
-          - pde_TrainingDeepONetBCP_dirichlet_soft: PDE/SpecificTraining_2var/xy_DeepONet_Training/pde_TrainingDeepONetBCP_dirichlet_soft.md
-          - pde_TrainingDeepONetBCP_neumann_soft: PDE/SpecificTraining_2var/xy_DeepONet_Training/pde_TrainingDeepONetBCP_neumann_soft.md
+          - pde_TrainingDeepONetBCP_hard: Legacy/SpecificTraining_2var/xy_DeepONet_Training/pde_TrainingDeepONetBCP_hard.md
+          - pde_TrainingDeepONetBCP_dirichlet_soft: Legacy/SpecificTraining_2var/xy_DeepONet_Training/pde_TrainingDeepONetBCP_dirichlet_soft.md
+          - pde_TrainingDeepONetBCP_neumann_soft: Legacy/SpecificTraining_2var/xy_DeepONet_Training/pde_TrainingDeepONetBCP_neumann_soft.md
+
+    - models:
+      - model: models/model.md
+      - pinn: models/pinn.md
+      - deeponet: models/deeponet.md
+
+    - plotters:
+      - plotLosses: plotters/plotLosses.md
+      - plotPinnPredicitons: plotters/plotPinnPredictions.md
+
+    - initials: initials/initials.md
 
 theme: readthedocs
 

@@ -10,7 +10,7 @@ from .ODE.SolveClasses.ode_SystemDeepONetSolveClass import ode_SystemDeepONetsol
 
 def solveODE_IVP(eqn, order, init_data, t_bdry=[0,1], N_pde=100, epochs=1000, net_layers=4, net_units=40, constraint = "soft", model=None):
     """
-    Main function for solving inital value problem ODE with a PINN (physics informed neural network).
+    Main function for solving initial value problem ODE with a PINN (physics informed neural network).
 
     Args:
         eqn (string): Equation to solve in form of string. function and derivatives represented as "u", "ut", "utt", 

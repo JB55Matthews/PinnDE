@@ -7,6 +7,6 @@ __all__= [
     "timesteptest"
 ]
 
-from .plottersPinnPredictions import plot_solution_prediction_time2D, \
+from .plotPinnPredictions import plot_solution_prediction_time2D, \
 plot_solution_prediction_2D, plot_solution_prediction_time1D, plot_solution_prediction_1D, timesteptest
 from .plotLosses import plot_epoch_loss
