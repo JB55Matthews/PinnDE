@@ -1,15 +1,30 @@
-from .model import model
 from ..selectors import pinnSelectors, constraintSelector
 from ..data import timedondata
 from ..training import deeponetTrainSteps 
 import tensorflow as tf
 import numpy as np
 
-class deeponet(model):
+class deeponet():
+    """
+    Class implementing a deeponet architecture
+    """
 
     def __init__(self, data, eqns,
                  layers=4, units=60, inner_act="tanh",
                  out_act="linear", constraint="soft"):
+        """
+        Constructor for class.
+
+        Args:
+          data (data): Data to solve on deeponet.
+          eqns (list): List of eqns to solve as strings. Spatial dimensions x1, x2, etc. Time dimension t. 
+            If a single equation, use u, if multiple, u1, u2, etc. See tutorials how to do specific examples.
+          layers (int): Number of internal layers for deeponet.
+          units (int): Number of units for internal layers for deeponet.
+          inner_act (string): Activation function for internal layers of deeponet. Must be TensorFlow useable activation function.
+          out_act (string): Activation function for internal layers of deeponet. Must be TensorFlow useable activation function.
+          constraint (string): Soft or hard constraint for network. **Note only soft currently work, for hard, use legacy models.**
+        """
 
         self._data = data
         self._eqns = eqns
@@ -88,31 +103,72 @@ class deeponet(model):
 # --------------------------------
 
     def get_network(self):
+      """
+      Returns:
+        (model): TensorFlow model.
+      """
       return self._network
     
     def get_epoch_loss(self):
+      """
+      Returns:
+        (tensor): Epoch loss after training.
+      """
       return self._epoch_loss
     
     def get_domain(self):
+      """
+      Returns:
+        (domain): Domain deeponet is trained on.
+      """
       return self._domain
     
     def get_sensors(self):
+      """
+      Returns:
+        (tensor): Sampled sensors deeponet uses
+      """
       return self._sensors
     
     def get_epochs(self):
+      """
+      Returns:
+        (int): Epochs deeponet was trained for.
+      """
       return self._epochs
     
     def get_data(self):
+      """
+      Returns:
+        (tensor): Data the deeponet uses to train.
+      """
       return self._data
 
     def get_boundaries(self):
+      """
+      Returns:
+        (boundaries): Boundaries deeponet was trained on.
+      """
       return self._boundaries
     
     def get_eqns(self):
+      """
+      Returns:
+        (list): Equations deeponet was trained for.
+      """
       return self._eqns
   
 
     def train(self, epochs, opt="adam", meta="false", adapt_pt="false"):
+      """
+      Main training function
+      
+      Args:
+        epochs (int): Epochs to train for.
+        opt (string): Optimizer to use.
+        meta (string): Whether to meta-learned optimize. **Not implemented**.
+        adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
+      """
       self._epochs = epochs
       if isinstance(self._data, timedondata):
         self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
@@ -121,6 +177,16 @@ class deeponet(model):
     
 
     def trainNoTime(self, eqns, epochs, opt, meta, adapt_pt):
+      """
+      Main setup for training and training loop which calls trainStep. This is used for a purely spatial problem
+
+      Args:
+        eqns (list): List of eqns to solve as strings.  
+        epochs (int): Epochs to train for.
+        opt (string): Optimizer to use.
+        meta (string): Whether to meta-learned optimize. **Not implemented**.
+        adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
+      """
 
       lr = tf.keras.optimizers.schedules.PolynomialDecay(1e-3, epochs, 1e-4)
       opt = pinnSelectors.pinnSelector(opt)(lr)
@@ -180,6 +246,17 @@ class deeponet(model):
       return
 
     def trainTime(self, eqns, epochs, opt, meta, adapt_pt):
+      """
+      Main setup for training and training loop which calls trainStep. This is used for a spatio-temporal problem
+
+      Args:
+        eqns (list): List of eqns to solve as strings.  
+        epochs (int): Epochs to train for.
+        opt (string): Optimizer to use.
+        meta (string): Whether to meta-learned optimize. **Not implemented**.
+        adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
+      """
+      
       print(self._clp.shape, self._sensors.shape)
       lr = tf.keras.optimizers.schedules.PolynomialDecay(1e-3, epochs, 1e-4)
       opt = pinnSelectors.pinnSelector(opt)(lr)
@@ -253,11 +330,8 @@ class deeponet(model):
 # Define the normalization layer
 class Normalize(tf.keras.layers.Layer):
   """
-  Class which describes a normalize layer for PINN. Returns input data
+  Class which describes a normalize layer for DeepONet. Returns input data
   normalized to interval [-1, 1].
-
-  Models for solving solvePDE_tx equations
-  --------------------------------------
   """
   def __init__(self, xmin, xmax, name=None, **kwargs):
     super(Normalize, self).__init__(name=name)
@@ -275,7 +349,7 @@ class Normalize(tf.keras.layers.Layer):
   
 class Periodic(tf.keras.layers.Layer):
   """
-  Class which describes a Periodic layer for PINN. Used in periodic models
+  Class which describes a Periodic layer for DeepONet. Used in periodic models
   """
   def __init__(self, xmin, xmax):
     super(Periodic, self).__init__()
@@ -296,9 +370,6 @@ def mlp_network(inp, n_layers, n_units):
 
     Returns:
         out (tensor): Output data from output layer of network
-
-    Models for solving solvePDE_DeepONet_tx equations
-    --------------------------------------
     """
 
     h = inp

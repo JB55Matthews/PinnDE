@@ -1,15 +1,31 @@
-from .model import model
 from ..selectors import pinnSelectors, constraintSelector
 from ..data import timepinndata
 from ..training import pinnTrainSteps 
 import tensorflow as tf
 import numpy as np
 
-class pinn(model):
+class pinn():
+    """
+    Class implementing a pinn architecture
+    """
 
     def __init__(self, data, eqns,
                  layers=4, units=60, inner_act="tanh",
                  out_act="linear", constraint="soft"):
+        
+        """
+        Constructor for class.
+
+        Args:
+          data (data): Data to solve on pinn.
+          eqns (list): List of eqns to solve as strings. Spatial dimensions x1, x2, etc. Time dimension t. 
+            If a single equation, use u, if multiple, u1, u2, etc. See tutorials how to do specific examples.
+          layers (int): Number of internal layers for pinn.
+          units (int): Number of units for internal layers for pinn.
+          inner_act (string): Activation function for internal layers of pinn. Must be TensorFlow useable activation function.
+          out_act (string): Activation function for internal layers of pinn. Must be TensorFlow useable activation function.
+          constraint (string): Soft or hard constraint for network. **Note only soft currently work, for hard, use legacy models.**
+        """
 
         self._data = data
         self._eqns = eqns
@@ -81,25 +97,58 @@ class pinn(model):
 # --------------------------------
 
     def get_network(self):
+      """
+      Returns:
+        (model): TensorFlow model.
+      """
       return self._network
     
     def get_epoch_loss(self):
+      """
+      Returns:
+        (tensor): Epoch loss after training.
+      """
       return self._epoch_loss
     
     def get_domain(self):
+      """
+      Returns:
+        (domain): Domain pinn is trained on.
+      """
       return self._domain
     
     def get_epochs(self):
+      """
+      Returns:
+        (int): Epochs pinn was trained for.
+      """
       return self._epochs
 
     def get_boundaries(self):
+      """
+      Returns:
+        (boundaries): Boundaries pinn was trained on.
+      """
       return self._boundaries
     
     def get_eqns(self):
+      """
+      Returns:
+        (list): Equations pinn was trained for.
+      """
       return self._eqns
   
 
     def train(self, epochs, opt="adam", meta="false", adapt_pt="false"):
+      """
+      Main training function
+      
+      Args:
+        epochs (int): Epochs to train for.
+        opt (string): Optimizer to use.
+        meta (string): Whether to meta-learned optimize. **Not implemented**.
+        adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
+      """
       self._epochs = epochs
       if isinstance(self._data, timepinndata):
         self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
@@ -108,6 +157,16 @@ class pinn(model):
     
 
     def trainNoTime(self, eqns, epochs, opt, meta, adapt_pt):
+      """
+      Main setup for training and training loop which calls trainStep. This is used for a purely spatial problem
+
+      Args:
+        eqns (list): List of eqns to solve as strings.  
+        epochs (int): Epochs to train for.
+        opt (string): Optimizer to use.
+        meta (string): Whether to meta-learned optimize. **Not implemented**.
+        adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
+      """
 
       lr = tf.keras.optimizers.schedules.PolynomialDecay(1e-3, epochs, 1e-4)
       opt = pinnSelectors.pinnSelector(opt)(lr)
@@ -154,6 +213,17 @@ class pinn(model):
       return
 
     def trainTime(self, eqns, epochs, opt, meta, adapt_pt):
+      """
+      Main setup for training and training loop which calls trainStep. This is used for a spatio-temporal problem
+
+      Args:
+        eqns (list): List of eqns to solve as strings.  
+        epochs (int): Epochs to train for.
+        opt (string): Optimizer to use.
+        meta (string): Whether to meta-learned optimize. **Not implemented**.
+        adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
+      """
+
       lr = tf.keras.optimizers.schedules.PolynomialDecay(1e-3, epochs, 1e-4)
       opt = pinnSelectors.pinnSelector(opt)(lr)
       bs_clp, bs_bcp, bs_icp = self._data.get_n_clp(), self._data.get_n_bc(), self._data.get_n_ic()
@@ -207,11 +277,8 @@ class pinn(model):
 # Define the normalization layer
 class Normalize(tf.keras.layers.Layer):
   """
-  Class which describes a normalize layer for PINN. Returns input data
+  Class which describes a normalize layer for pinn. Returns input data
   normalized to interval [-1, 1].
-
-  Models for solving solvePDE_tx equations
-  --------------------------------------
   """
   def __init__(self, xmin, xmax, name=None, **kwargs):
     super(Normalize, self).__init__(name=name)
@@ -229,7 +296,7 @@ class Normalize(tf.keras.layers.Layer):
   
 class Periodic(tf.keras.layers.Layer):
   """
-  Class which describes a Periodic layer for PINN. Used in periodic models
+  Class which describes a Periodic layer for pinn. Used in periodic models.
   """
   def __init__(self, xmin, xmax):
     super(Periodic, self).__init__()

@@ -4,8 +4,20 @@ import tensorflow as tf
 from pyDOE import lhs
 
 class Time_NEllipsoid(timedomain):
+    """
+    Class for solving spatio-temporal (1+N) problems on N dimensional ellipsoids
+    """
 
     def __init__(self, dim, center, semilengths, timeRange):
+        """
+        Constructor for class
+
+        Args:
+            dim (int): Spatial dimension of domain.
+            center (list): Center of ellipsoid in list for, e.g, [0, 0].
+            semilengths (list): semi-axi lengths of ellipsoid, e.g, [1, 1].
+            timeRange (list): Range of time to solve equation over, e.g, [0, 1].
+        """
         if dim == 1:
             raise ValueError("1+1 equation should use a Time_NRect, as 1 spatial dimension is an interval")
         
@@ -23,6 +35,13 @@ class Time_NEllipsoid(timedomain):
         super().set_min_dim_vals(min_dims)
 
     def isInside(self, timepoint):
+        """
+        Args:
+            timepoint (list): Point in time+spatial dimensions of the ellipsoid
+
+        Returns:
+            (bool): True if point is interior to the ellipsoid, False otherwise
+        """
         # No time componennt
         if (len(timepoint) == self._dim):
             sum = 0
@@ -42,6 +61,13 @@ class Time_NEllipsoid(timedomain):
             return False
 
     def onBoundary(self, timepoint):
+        """
+        Args:
+            timepoint (list): Point in time+spatial dimensions of the ellipsoid
+
+        Returns:
+            (bool): True if point is on the boundary of the ellipsoid, False otherwise
+        """
         # No time componennt
         if (len(timepoint) == self._dim):
             sum = 0
@@ -66,6 +92,15 @@ class Time_NEllipsoid(timedomain):
             return False
 
     def sampleBoundary(self, n_bc):
+        """
+        Samples boundary of ellipsoid
+
+        Args:
+            n_bc (int): Number of points to sample in the boundary.
+
+        Returns:
+            (tensor): Sampled time+boundary points.
+        """
         super().set_bdry_component_size(n_bc)
         points = []
         for i in range(self._dim):
@@ -92,11 +127,27 @@ class Time_NEllipsoid(timedomain):
         return points
 
     def onInitial(self, timepoint):
+        """
+        Args:
+            timepoint (list): Point in time+spatial dimensions of domain.
+
+        Returns:
+            (bool): True if point is an initial point, False otherwise.
+        """
         if (timepoint[0] == self._timeRange[0]):
             return True
         return False
 
     def sampleDomain(self, n_clp):
+        """
+        Samples interior of ellipsoid
+        
+        Args:
+            n_clp (int): Number of points to sample in the interior of the ellipsoid.
+
+        Returns:
+            (tensor): Sampled time+interior points.
+        """
         points = []
         for i in range(self._dim):
             points.append(0)

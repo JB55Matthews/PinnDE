@@ -4,8 +4,19 @@ import tensorflow as tf
 from pyDOE import lhs
 
 class NEllipsoid(domain):
+    """
+    Class for solving purely spatial problems on N dimensional ellipsoids
+    """
 
     def __init__(self, dim, center, semilengths):
+        """
+        Constructor for class
+
+        Args:
+            dim (int): Spatial dimension of domain.
+            center (list): Center of ellipsoid in list for, e.g, [0, 0].
+            semilengths (list): semi-axi lengths of ellipsoid, e.g, [1, 1].
+        """
         if dim == 1:
             raise ValueError("1+1 equation should use a Time_NRect, as 1 spatial dimension is an interval")
         
@@ -22,6 +33,13 @@ class NEllipsoid(domain):
         super().set_min_dim_vals(min_dims)
 
     def isInside(self, point):
+        """
+        Args:
+            point (list): Point in spatial dimensions of the ellipsoid
+
+        Returns:
+            (bool): True if point is interior to the ellipsoid, False otherwise
+        """
         if (len(point) == self._dim):
             sum = 0
             for i in range(self._dim):
@@ -31,6 +49,13 @@ class NEllipsoid(domain):
             return False
 
     def onBoundary(self, point):
+        """
+        Args:
+            point (list): Point in spatial dimensions of the ellipsoid
+
+        Returns:
+            (bool): True if point is on the boundary of the ellipsoid, False otherwise
+        """
         if (len(point) == self._dim):
             sum = 0
             for i in range(self._dim):
@@ -40,6 +65,15 @@ class NEllipsoid(domain):
             return False
 
     def sampleBoundary(self, n_bc):
+        """
+        Samples boundary of ellipsoid
+
+        Args:
+            n_bc (int): Number of points to sample in the boundary.
+
+        Returns:
+            (tensor): Sampled boundary points.
+        """
         super().set_bdry_component_size(n_bc)
         points = []
         for i in range(self._dim):
@@ -57,6 +91,15 @@ class NEllipsoid(domain):
         return points
 
     def sampleDomain(self, n_clp):
+        """
+        Samples interior of ellipsoid
+        
+        Args:
+            n_clp (int): Number of points to sample in the interior of the ellipsoid.
+
+        Returns:
+            (tensor): Sampled interior points.
+        """
         points = []
         for i in range(self._dim):
             points.append(0)

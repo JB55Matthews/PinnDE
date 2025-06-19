@@ -98,13 +98,16 @@ nav:
           - pde_TrainingDeepONetBCP_neumann_soft: Legacy/SpecificTraining_2var/xy_DeepONet_Training/pde_TrainingDeepONetBCP_neumann_soft.md
 
     - models:
-      - model: models/model.md
       - pinn: models/pinn.md
       - deeponet: models/deeponet.md
 
     - plotters:
       - plotLosses: plotters/plotLosses.md
       - plotPinnPredicitons: plotters/plotPinnPredictions.md
+
+    - training:
+      - pinnTrainSteps: training/pinnTrainSteps.md
+      - deeponetTrainSteps: training/deeponetTrainSteps.md
 
     - initials: initials/initials.md
 

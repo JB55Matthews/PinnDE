@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-def constraintSelector()
+def constraintSelector():
 
 
     return

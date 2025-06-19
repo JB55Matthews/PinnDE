@@ -3,6 +3,19 @@ import numpy as np
 import ast
 
 def trainStep(eqns, clps, bcs, usensors, network, boundary):
+    """
+    Main training step for purely spatial problems.
+
+    Args:
+        eqns (list): List of equations deeponet trains to solve.
+        clps (tensor): Sampled collocation points which have been processed for training.
+        bcs (tensor): Sampled boundary points which have been processed for training.
+        usensors (tensor): Sampled sensors which have been processed for training.
+        network (model): TensorFlow deeponet to train.
+        boundary (boundaries): Boundary in which model is trained over.
+
+    Returns Collocation point loss, boundary point loss, and gradients to optimize
+    """
     dim = boundary.get_domain().get_dim()
     bdry_type = boundary.get_bdry_type()
     bdry_components = boundary.get_domain().get_bdry_components()
@@ -130,6 +143,21 @@ def trainStep(eqns, clps, bcs, usensors, network, boundary):
 
 
 def trainStepTime(eqns, clps, bcs, ics, usensors, network, boundary, t_orders):
+    """
+    Main training step for purely spatial problems.
+
+    Args:
+        eqns (list): List of equations deeponet trains to solve.
+        clps (tensor): Sampled collocation points which have been processed for training.
+        bcs (tensor): Sampled boundary points which have been processed for training.
+        ics (tensor): Sampled initial points which have been processed for training.
+        usensors (tensor): Sampled sensors which have been processed for training.
+        network (model): TensorFlow deeponet to train.
+        boundary (boundaries): Boundary in which model is trained over.
+        t_orders (list): List of orders of time of each equation training on.
+
+    Returns Collocation point loss, boundary point loss, initial point loss, and gradients to optimize
+    """
     dim = boundary.get_domain().get_dim()
     bdry_type = boundary.get_bdry_type()
     bdry_components = boundary.get_domain().get_bdry_components()

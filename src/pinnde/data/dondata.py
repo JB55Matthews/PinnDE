@@ -5,8 +5,21 @@ from ..domain import timedomain, domain
 
 
 class dondata(data):
+    """
+    Class for data on purely spatial problems with a deep operator network.
+    """
 
     def __init__(self, domain, boundaries, n_clp=10000, n_bc=600, n_sensors=1000):
+        """
+        Constructor for class
+
+        Args:
+          domain (domain): Domain to generate data on.
+          boundaries (boundaries): Boundary to generate data on.
+          n_clp (int): Number of collocation points.
+          n_bc (int): Number of boundary condition points.
+          n_sensors (int): Number of sensors to sample u with.
+        """
         super().__init__(3)
         self._domain = domain
         self._boundaries = boundaries
@@ -19,6 +32,12 @@ class dondata(data):
         return
 
     def generate_sensors(self):
+        """
+        Function to generate sensors for network.
+
+        Returns:
+          (tensor): Sampled sensors.
+        """
         max_waves = 3
         clps = self._domain.sampleDomain(self._n_sensors)
         if (isinstance(self._domain, timedomain)):
@@ -37,25 +56,57 @@ class dondata(data):
         return usensors
 
     def get_clp(self):
+      """
+      Returns:
+        (tensor): Sampled collocation points.
+      """
       return self._clp
 
     def get_bcp(self):
+      """
+      Returns:
+        (tensor): Sampled boundary points.
+      """
       return self._bcp
 
     def get_domain(self):
-        return self._domain
+      """
+      Returns:
+        (domain): Domain data is generated on.
+      """
+      return self._domain
 
     def get_boundaries(self):
-        return self._boundaries
+      """
+      Returns:
+        (boundaries): Boundary data is generated on.
+      """
+      return self._boundaries
     
     def get_n_clp(self):
+      """
+      Returns:
+        (int): Number of collocation points sampled.
+      """
       return self._n_clp
 
     def get_n_bc(self):
+      """
+      Returns:
+        (int): Number of boundary points sampled.
+      """
       return self._n_bc
     
     def get_n_sensors(self):
+       """
+      Returns:
+        (int): Number of sensors sampled.
+      """
        return self._n_sensors
     
     def get_sensors(self):
+       """
+      Returns:
+        (tensor): Sampled sensors.
+      """
        return self._sensors

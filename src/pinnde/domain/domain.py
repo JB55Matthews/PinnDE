@@ -12,7 +12,6 @@ class domain(ABC):
 
       Args:
         dim (int): Spatial dimension of domain.
-
       """
       self._dim = dim
       self._bdry_component_size = None
