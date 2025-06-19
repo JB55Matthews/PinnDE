@@ -353,3 +353,73 @@ def plot_solution_prediction_time2D(model):
             plt.savefig(f"PDE-solution-pred-u{e+1}")
             plt.clf()
     return
+
+
+def timesteptest(model, steps):
+    eqns = model.get_eqns()
+    network = model.get_network()
+    domain = model.get_domain()
+    time_range = domain.get_timeRange()
+
+    T, X = np.meshgrid(np.linspace(time_range[0], time_range[1], 200), 
+                       np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors()), indexing='ij')
+    Tall, Xall = np.meshgrid(np.linspace(time_range[0], time_range[1]*steps, steps*199), 
+                       np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors()), indexing='ij')
+    
+    if (isinstance(model, pinn)):
+        sols = network([np.expand_dims(T.flatten(), axis=1), np.expand_dims(X.flatten(), axis=1)])
+    elif (isinstance(model, deeponet)):
+        x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
+        amplitudes = np.random.randn(3, 1)
+        phases = -np.pi*np.random.rand(3, 1) + np.pi/2
+        u = 0.0*x
+        for i in range(3):
+            u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])
+        usensor = u.numpy()
+        u = []
+        for i in range(steps):
+            u_c = network([np.expand_dims(T.flatten(), axis=1),
+                        np.expand_dims(X.flatten(), axis=1),
+                        usensor])[:,0]
+            u_c = np.reshape(u_c, (200, model.get_data().get_n_sensors()))
+
+            # Reconstruct solution
+            uinit = np.repeat(usensor, repeats=200, axis=0)
+
+            # For form u(t,x) = u0(x) + t/tf*v(t,x)
+            # u_c = uinit + T/time_range[1]*u_c
+            u_c = uinit
+
+            # # For form u(t,x) = u0(x)*(1-t/tf) + t/tf*v(t,x)
+            # u_c = uinit*(1-T/tfinal) + T/tfinal*u_c
+            u.append(u_c[:-1,])
+
+            # Next initial condition
+            usensor = u_c[-1:,:]
+
+        u = np.concatenate(u)
+
+
+    if len(eqns) == 1:
+        # sols = np.reshape(sols, (200, 200))
+        plt.figure()
+        plt.contourf(Tall, Xall, u, 200, cmap=plt.cm.jet)
+        plt.title('Neural network solution')
+        plt.xlabel('t')
+        plt.ylabel('x1')
+        plt.colorbar()
+        plt.savefig("timesteptest")
+        plt.clf()
+
+    elif len(eqns) > 1:
+        for e in range(len(eqns)):
+            globals()[f"sols{e+1}"] = np.reshape(sols[e], (200, 200))
+            plt.figure()
+            plt.contourf(T, X, globals()[f"sols{e+1}"], 200, cmap=plt.cm.jet)
+            plt.title(f'Neural network solution - u{e+1}')
+            plt.xlabel('t')
+            plt.ylabel('x1')
+            plt.colorbar()
+            plt.savefig(f"PDE-solution-pred-u{e+1}")
+            plt.clf()
+    return

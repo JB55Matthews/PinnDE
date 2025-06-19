@@ -126,14 +126,15 @@ import matplotlib.pyplot as plt
 # DeepONet --------------
 
 # Heat 1+1
-# tre = p.domain.Time_NRect(1, [0], [1], [0,1])
-# bound = p.boundaries.dirichlet(tre, [lambda t, x1: 0+t*0 ])
-# inits = p.initials.initials(tre, [lambda x1: tf.sin(np.pi*x1)])
-# dat = p.data.timedondata(tre, bound, inits, 12000, 1000, 1000, 1000)
-# mymodel = p.models.deeponet(dat, ["0.08*ux1x1 - ut"])
-# mymodel.train(1500)
-# p.plotters.plot_solution_prediction_time1D(mymodel)
-# p.plotters.plot_epoch_loss(mymodel)
+tre = p.domain.Time_NRect(1, [0], [1], [0,1])
+bound = p.boundaries.dirichlet(tre, [lambda t, x1: 0+t*0 ])
+inits = p.initials.initials(tre, [lambda x1: tf.sin(np.pi*x1)])
+dat = p.data.timedondata(tre, bound, inits, 12000, 1000, 1000, 1000)
+mymodel = p.models.deeponet(dat, ["0.08*ux1x1 - ut"])
+mymodel.train(1500)
+p.plotters.plot_solution_prediction_time1D(mymodel)
+p.plotters.plot_epoch_loss(mymodel)
+p.plotters.timesteptest(mymodel, 2)
 
 # Heat 3D
 # # tre = p.domain.Time_NRect(2, [0, 0], [1, 1], [0,1])
@@ -149,13 +150,13 @@ import matplotlib.pyplot as plt
 # p.plotters.plot_epoch_loss(mymodel)
 
 # Poisson
-re2 = p.domain.NRect(2, [-1, -1], [1, 1])
-bound2 = p.boundaries.dirichlet(re2, [lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)])
-dat2 = p.data.dondata(re2, bound2, 12000, 1000, 2000)
-mymodel = p.models.deeponet(dat2, ["ux1x1 + ux2x2 - (-2*np.pi**2*tf.cos(np.pi*x1)*tf.sin(np.pi*x2))"])
-mymodel.train(1500)
-p.plotters.plot_solution_prediction_2D(mymodel)
-p.plotters.plot_epoch_loss(mymodel)
+# re2 = p.domain.NRect(2, [-1, -1], [1, 1])
+# bound2 = p.boundaries.dirichlet(re2, [lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)])
+# dat2 = p.data.dondata(re2, bound2, 12000, 1000, 2000)
+# mymodel = p.models.deeponet(dat2, ["ux1x1 + ux2x2 - (-2*np.pi**2*tf.cos(np.pi*x1)*tf.sin(np.pi*x2))"])
+# mymodel.train(1500)
+# p.plotters.plot_solution_prediction_2D(mymodel)
+# p.plotters.plot_epoch_loss(mymodel)
 
 # Linear Advection
 # tre = p.domain.Time_NRect(1, [-1], [1], [0,1])
@@ -165,8 +166,10 @@ p.plotters.plot_epoch_loss(mymodel)
 # mymodel = p.models.deeponet(dat, ["ut+ux1"])
 # # dat = p.data.timepinndata(tre, bound, inits, 12000, 4, 600)
 # # mymodel = p.models.pinn(dat, ["ut+ux1"])
-# mymodel.train(1200)
+# mymodel.train(2000)
 # p.plotters.plot_solution_prediction_time1D(mymodel)
 # p.plotters.plot_epoch_loss(mymodel)
+
+# p.plotters.timesteptest(mymodel, 3)
 
 # -------------
