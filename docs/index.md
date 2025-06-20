@@ -35,30 +35,3 @@ DeepONets
 * Simple to use plotting modules for 1+1, 1+2, spatio-temporal equations, and 1 and 2 dimensional spatial equations
 
 We provide Periodic, Dirichlet, and Neumann boundary conditions for each of these PDE problems
-
-### Tutorials
-* [ODE Tutorials](Tutorials/Tutorials_ODEs/ODE_Tutorials.md)
-* [PDEs in t and x Tutorials](Tutorials/Tutorials_PDEs_tx/PDE_tx_tutorials.md)
-* [PDEs in x and y Tutorials](Tutorials/Tutorials_PDEs_xy/PDE_xy_tutorials.md)
-
-<!-- ## Main Functions in Solving API
-### Solvers, Boundaries, and Initials
-* [ODE Solvers](Legacy/ode_Solvers.md)
-* [PDE Solvers](Legacy/pde_Solvers.md)
-* [PDE Boundaries](Legacy/pde_Boundaries_2var.md)
-* [PDE Initial Conditions](Legacy/pde_Initials.md)
-### Classes returned in Solving
-* ode Solve Classes
-    * [ode_SolveClass](Legacy/odeSolveClasses/ode_SolveClass.md)
-    * [ode_SystemSolveClass](Legacy/odeSolveClasses/ode_SystemSolveClass.md)
-    * [ode_DeepONetSolveClass](Legacy/odeSolveClasses/ode_DeepONetSolveClass.md)
-    * [ode_SystemDeepONetSolveClass](Legacy/odeSolveClasses/ode_SystemDeepONetSolveClass.md)
-
-* pde Solve Classes:
-    * [pde_SolveClass_tx](Legacy/pdeSolveClasses/pde_SolveClass_tx.md)
-    * [pde_SolveClass_xy](Legacy/pdeSolveClasses/pde_SolveClass_xy.md)
-    * [pde_DeepONetSolveClass_tx](Legacy/pdeSolveClasses/pde_DeepONetSolveClass_tx.md)
-    * [pde_DeepONetSolveClass_xy](Legacy/pdeSolveClasses/pde_DeepONetSolveClass_xy.md)
-
-
-Functions in API under ODE and PDE are internally used, organized in structure found in code -->

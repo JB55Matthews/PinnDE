@@ -7,9 +7,12 @@ nav:
   - Cite: cite.md
   
   - Tutorials:
-    - ODEs: Tutorials/Tutorials_ODEs/ODE_Tutorials.md
-    - PDEs in t and x: Tutorials/Tutorials_PDEs_tx/PDE_tx_tutorials.md
-    - PDEs in x and y: Tutorials/Tutorials_PDEs_xy/PDE_xy_tutorials.md
+    - PINNs: tutorials/pinntutorials/pinntutorials.md
+    - DeepONets: tutorials/deeponettutorials/deeponettutorials.md
+    - Legacy:
+      - ODEs: tutorials/legacy/Tutorials_ODEs/ODE_Tutorials.md
+      - PDEs in t and x: tutorials/legacy/Tutorials_PDEs_tx/PDE_tx_tutorials.md
+      - PDEs in x and y: tutorials/legacy/Tutorials_PDEs_xy/PDE_xy_tutorials.md
 
   - API:
     - boundaries:

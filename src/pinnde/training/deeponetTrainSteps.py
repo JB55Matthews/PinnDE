@@ -120,11 +120,13 @@ def trainStep(eqns, clps, bcs, usensors, network, boundary):
                     for col in ics_group:
                         tape2.watch(col)
                     dim_iter = dim
+                    in_group = ics_group[:dim]
+                    in_group.append(usensors)
                     for e in range(len(eqns)):
                         if (len(eqns) == 1):
-                            u_init_pred = network(ics_group[:dim])
+                            u_init_pred = network(in_group)
                         else:
-                            u_init_pred = network(ics_group[:dim])[e]
+                            u_init_pred = network(in_group)[e]
                         BCloss += tf.reduce_mean(tf.square(u_init_pred - tf.cast(ics_group[dim_iter], tf.float32)))
                         dim_iter += 1
                         for i in range(t_orders[e]-1):

@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 # print(b)
 # print(np.shape(b))
 
-# Poisson
+# Poisson 1
 # re2 = p.domain.NRect(2, [-1, -1], [1, 1])
 # bound2 = p.boundaries.dirichlet(re2, [lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)])
 # dat2 = p.data.pinndata(re2, bound2, 12000, 10)
@@ -24,6 +24,26 @@ import matplotlib.pyplot as plt
 # mymodel.train(1)
 # p.plotters.plot_solution_prediction_2D(mymodel)
 # p.plotters.plot_epoch_loss(mymodel)
+
+# Poisson 2
+# re2 = p.domain.NRect(2, [-1, -1], [1, 1])
+# bound2 = p.boundaries.dirichlet(re2, [lambda x1, x2: (0.1*tf.sin(2*np.pi*x1) + tf.math.tanh(10*x1))*tf.sin(2*np.pi*x2)])
+# dat2 = p.data.pinndata(re2, bound2, 12000, 800)
+# mymodel = p.models.pinn(dat2, ["ux1x1 + ux2x2 - (-(0.4*np.pi**2*tf.sin(2*np.pi*x1)+200*tf.math.tanh(10*x1)/tf.math.cosh(10*x1)**2)\
+#                                 *tf.sin(2*np.pi*x2) - 4*np.pi**2*(0.1*tf.sin(2*np.pi*x1) + tf.math.tanh(10*x1))*tf.sin(2*np.pi*x2))"])
+# mymodel.train(2500)
+# p.plotters.plot_solution_prediction_2D(mymodel)
+# p.plotters.plot_epoch_loss(mymodel)
+
+# Helmholtz
+# re2 = p.domain.NRect(2, [0, 0], [1, 1])
+# bound2 = p.boundaries.dirichlet(re2, [lambda x1, x2: 0+x1*0])
+# dat2 = p.data.pinndata(re2, bound2, 12000, 800)
+# mymodel = p.models.pinn(dat2, ["ux1x1 + ux2x2 + ((np.pi*2)**2)*u + ((np.pi*2)**2)*tf.sin((np.pi*2)*x1)*tf.sin((np.pi*2)*x2)"])
+# mymodel.train(2500)
+# p.plotters.plot_solution_prediction_2D(mymodel)
+# p.plotters.plot_epoch_loss(mymodel)
+
 
 # Linear Advection
 # tre = p.domain.Time_NRect(1, [-1], [1], [0,1])
@@ -61,15 +81,15 @@ import matplotlib.pyplot as plt
 
 
 # Heat 3D
-tre = p.domain.Time_NRect(2, [0, 0], [1, 1], [0,1])
-tre = p.domain.Time_NEllipsoid(2, [0.5, 0.5], [0.5, 0.5], [0, 1])
-bound = p.boundaries.dirichlet(tre, [lambda t, x1, x2: 0+t*0 ])
-inits = p.initials.initials(tre, [lambda x1, x2: tf.sin(np.pi*x1)*tf.sin(np.pi*x2)])
-dat = p.data.timepinndata(tre, bound, inits, 12000, 600, 300)
-mymodel = p.models.pinn(dat, ["0.08*ux1x1 + 0.08*ux2x2 - ut"])
-mymodel.train(800)
-p.plotters.plot_solution_prediction_time2D(mymodel)
-p.plotters.plot_epoch_loss(mymodel)
+# tre = p.domain.Time_NRect(2, [0, 0], [1, 1], [0,1])
+# tre = p.domain.Time_NEllipsoid(2, [0.5, 0.5], [0.5, 0.5], [0, 1])
+# bound = p.boundaries.dirichlet(tre, [lambda t, x1, x2: 0+t*0 ])
+# inits = p.initials.initials(tre, [lambda x1, x2: tf.sin(np.pi*x1)*tf.sin(np.pi*x2)])
+# dat = p.data.timepinndata(tre, bound, inits, 12000, 600, 300)
+# mymodel = p.models.pinn(dat, ["0.08*ux1x1 + 0.08*ux2x2 - ut"])
+# mymodel.train(800)
+# p.plotters.plot_solution_prediction_time2D(mymodel)
+# p.plotters.plot_epoch_loss(mymodel)
 
 #KvD
 # tre = p.domain.Time_NRect(1, [-1], [1], [0,1])
@@ -105,20 +125,20 @@ p.plotters.plot_epoch_loss(mymodel)
 # test system - advec and burgers
 # tre = p.domain.Time_NRect(1, [-1], [1], [0, 1])
 # bound = p.boundaries.periodic(tre)
-# inits = p.initials.initials(tre, [[lambda x1: tf.cos(np.pi*x1)], [lambda x1: tf.cos(np.pi*x1)]])
-# dat = p.data.timepinndata(tre, bound, inits, 12000, 10, 500)
-# mymodel = p.models.pinn(dat, ["u1t+u1x1", "u2t+u2*u2x1-(-0.0025)*u2x1x1x1"])
-# mymodel.train(1500)
+# inits = p.initials.initials(tre, [[lambda x1: tf.cos(np.pi*x1)], [lambda x1: -tf.sin(np.pi*x1)]])
+# dat = p.data.timepinndata(tre, bound, inits, 12000, 10, 800)
+# mymodel = p.models.pinn(dat, ["u1t+u1x1", "u2t+u2*u2x1-(0.01/np.pi)*u2x1x1"])
+# mymodel.train(2000)
 # p.plotters.plot_epoch_loss(mymodel)
 # p.plotters.plot_solution_prediction_time1D(mymodel)
 
-
+# Burgers
 # tre = p.domain.Time_NRect(1, [-1], [1], [0, 1])
-# bound = p.boundaries.dirichlet(tre, [lambda t, x1: 0+t*0])
-# inits = p.initials.initials(tre, [[lambda x1: tf.sin((np.pi/2)*x1 + (np.pi/2))], [lambda x1: -tf.sin(np.pi*x1)]])
-# dat = p.data.timepinndata(tre, bound, inits, 12000, 1000, 1000)
-# mymodel = p.models.pinn(dat, ["0.08*u1x1x1 - u1t", "u2t+u2*u2x1-(0.01/np.pi)*u2x1x1"])
-# mymodel.train(1500)
+# bound = p.boundaries.periodic(tre)
+# inits = p.initials.initials(tre, [lambda x1: -tf.sin(np.pi*x1)])
+# dat = p.data.timepinndata(tre, bound, inits, 12000, 10, 400)
+# mymodel = p.models.pinn(dat, ["ut+u*ux1-(0.01/np.pi)*ux1x1"])
+# mymodel.train(1000)
 # p.plotters.plot_epoch_loss(mymodel)
 # p.plotters.plot_solution_prediction_time1D(mymodel)
 
@@ -137,7 +157,7 @@ p.plotters.plot_epoch_loss(mymodel)
 # p.plotters.timesteptest(mymodel, 2)
 
 # Heat 3D
-# # tre = p.domain.Time_NRect(2, [0, 0], [1, 1], [0,1])
+# tre = p.domain.Time_NRect(2, [0, 0], [1, 1], [0,1])
 # tre = p.domain.Time_NEllipsoid(2, [0.5, 0.5], [0.5, 0.5], [0, 1])
 # bound = p.boundaries.dirichlet(tre, [lambda t, x1, x2: 0+t*0 ])
 # inits = p.initials.initials(tre, [lambda x1, x2: tf.sin(np.pi*x1)*tf.sin(np.pi*x2)])
@@ -145,7 +165,7 @@ p.plotters.plot_epoch_loss(mymodel)
 # mymodel = p.models.deeponet(dat, ["0.08*ux1x1 + 0.08*ux2x2 - ut"])
 # # dat = p.data.timepinndata(tre, bound, inits, 12000, 600, 600)
 # # mymodel = p.models.pinn(dat, ["0.08*ux1x1 + 0.08*ux2x2 - ut"])
-# mymodel.train(1200)
+# mymodel.train(1)
 # p.plotters.plot_solution_prediction_time2D(mymodel)
 # p.plotters.plot_epoch_loss(mymodel)
 
@@ -154,7 +174,7 @@ p.plotters.plot_epoch_loss(mymodel)
 # bound2 = p.boundaries.dirichlet(re2, [lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)])
 # dat2 = p.data.dondata(re2, bound2, 12000, 1000, 2000)
 # mymodel = p.models.deeponet(dat2, ["ux1x1 + ux2x2 - (-2*np.pi**2*tf.cos(np.pi*x1)*tf.sin(np.pi*x2))"])
-# mymodel.train(1500)
+# mymodel.train(1)
 # p.plotters.plot_solution_prediction_2D(mymodel)
 # p.plotters.plot_epoch_loss(mymodel)
 
@@ -166,10 +186,22 @@ p.plotters.plot_epoch_loss(mymodel)
 # mymodel = p.models.deeponet(dat, ["ut+ux1"])
 # # dat = p.data.timepinndata(tre, bound, inits, 12000, 4, 600)
 # # mymodel = p.models.pinn(dat, ["ut+ux1"])
-# mymodel.train(2000)
+# mymodel.train(2)
 # p.plotters.plot_solution_prediction_time1D(mymodel)
 # p.plotters.plot_epoch_loss(mymodel)
 
 # p.plotters.timesteptest(mymodel, 3)
+
+# test ode
+tre = p.domain.NRect(1, [0], [1])
+cond = p.boundaries.odeicbc(tre, [0.5, 1], "ic")
+# cond = p.boundaries.odeicbc(tre, [[0.5, 1.11, 1, 0.12], [2, 1.12]], "bc")
+dat = p.data.dondata(tre, cond, 1000, 100, 1000)
+mymodel = p.models.deeponet(dat, ["ux1x1 + u"])
+# dat = p.data.pinndata(tre, cond, 10, 10)
+# mymodel = p.models.pinn(dat, ["u1x1x1 + u1", "u2x1+u1"])
+mymodel.train(1000)
+p.plotters.plot_epoch_loss(mymodel)
+p.plotters.plot_solution_prediction_1D(mymodel)
 
 # -------------

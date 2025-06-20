@@ -16,13 +16,15 @@ def plot_solution_prediction_1D(model):
     if isinstance(model, pinn):
         sols = network(np.expand_dims(t, axis=1))
     elif isinstance(model, deeponet):
+        x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
         amplitudes = np.random.randn(3, 1)
         phases = -np.pi*np.random.rand(3, 1) + np.pi/2
-        u = 0.0*t
+        u = 0.0*x
         for i in range(3):
-            u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(t, axis=0)+ phases[i])
-        sensors = u.numpy()
+            u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])
+        sensors = u.numpy()    
         sols = network([np.expand_dims(t, axis=1), sensors])
+        sols = tf.squeeze(sols, axis=1)
 
     if len(eqns) == 1:
         plt.figure()
