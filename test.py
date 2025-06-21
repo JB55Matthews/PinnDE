@@ -1,7 +1,7 @@
 import src.pinnde as p
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 
 
 # tel = p.domain.Time_NEllipsoid(2, [0, 0], [2.5, 1.5], [0,1])

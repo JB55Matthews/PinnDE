@@ -1,4 +1,4 @@
-# Solving the Poisson equation with Dirichlet boundaries with a PINN
+# Solving the Helmholtz equation with Dirichlet boundaries with a PINN
 
 ## Problem
 We will look at solving a specific instance of the Helmholtz equation
