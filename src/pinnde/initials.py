@@ -3,30 +3,70 @@ import tensorflow as tf
 from pyDOE import lhs
 
 class initials():
+  """
+  Class implementing initial conditions.
+  """
 
   def __init__(self, domain, lambdas):
+    """
+    Constructor for class
+
+    Args:
+        domain (domain): Domain for boundary to act on.
+        lambdas (list): List of initial functions as lambda functions, each function in full
+          spatial dimensions, e.g, a 1+2 equation would have [lambda x1, x2: function].
+    """
     self._domain = domain
     self._lambdas = lambdas
     self._orders = []
     self._init_block_size = None
 
   def get_domain(self):
+    """
+    Returns:
+      (domain): Domain for boundary
+    """
     return self._domain
 
   def get_lambdas(self):
+    """
+    Returns: 
+      (list): Initial lambda functions
+    """
     return self._lambdas
 
   def get_init_block_size(self):
+    """
+    Returns: 
+      (int): Block size of each initial component
+    """
     return self._init_block_size
   
   def get_orders(self):
+    """
+    Returns: 
+      (list): Orders of t in each equation sampled
+    """
     return self._orders
 
   def set_init_block_size(self, block_size):
+    """
+    Args: 
+      block_size (int): Block size of each initial component
+    """
     self._init_block_size = block_size
 
 
   def sampleInitials(self, n_iv):
+    """
+      Samples initial of domain, and computes initial functions to generate boundary data.
+
+      Args:
+        n_iv (int): Number of initial condition points to use.
+
+      Returns:
+        (tensor): Initial points.
+      """
     flat_lambdas = self._lambdas
     self._orders = [len(self._lambdas)]
     # multiple eqns, [[lambdas], [lambdas]]

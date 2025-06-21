@@ -3,6 +3,12 @@ import matplotlib.pyplot as plt
 from ..domain import NRect
 
 def plot_epoch_loss(model):
+    """
+    Plots epoch loss for a trained model.
+
+    Args:
+        model (model): Model which has been trained
+    """
     plt.figure()
     plt.semilogy(np.linspace(1, model.get_epochs(), model.get_epochs()),model.get_epoch_loss())
     plt.grid()
