@@ -193,15 +193,87 @@ import matplotlib.pyplot as plt
 # p.plotters.timesteptest(mymodel, 3)
 
 # test ode
-tre = p.domain.NRect(1, [0], [1])
-cond = p.boundaries.odeicbc(tre, [0.5, 1], "ic")
-# cond = p.boundaries.odeicbc(tre, [[0.5, 1.11, 1, 0.12], [2, 1.12]], "bc")
-dat = p.data.dondata(tre, cond, 1000, 100, 1000)
-mymodel = p.models.deeponet(dat, ["ux1x1 + u"])
-# dat = p.data.pinndata(tre, cond, 10, 10)
-# mymodel = p.models.pinn(dat, ["u1x1x1 + u1", "u2x1+u1"])
-mymodel.train(1000)
-p.plotters.plot_epoch_loss(mymodel)
-p.plotters.plot_solution_prediction_1D(mymodel)
+# tre = p.domain.NRect(1, [0], [1])
+# cond = p.boundaries.odeicbc(tre, [0.5, 1], "ic")
+# # cond = p.boundaries.odeicbc(tre, [[0.5, 1.11, 1, 0.12], [2, 1.12]], "bc")
+# dat = p.data.dondata(tre, cond, 1000, 100, 1000)
+# mymodel = p.models.deeponet(dat, ["ux1x1 + u"])
+# # dat = p.data.pinndata(tre, cond, 10, 10)
+# # mymodel = p.models.pinn(dat, ["u1x1x1 + u1", "u2x1+u1"])
+# mymodel.train(1000)
+# p.plotters.plot_epoch_loss(mymodel)
+# p.plotters.plot_solution_prediction_1D(mymodel)
 
-# -------------
+# Inverse -------------
+
+# Linear Advection
+# c = 1
+# u0 = lambda x: tf.cos(np.pi*x)
+# u_true = lambda x, t: u0(x-c*t)
+# N_data = 200
+# xdata = np.random.uniform(-1, 1, N_data)
+# tdata = np.random.uniform(0, 1, N_data)
+# udata = u_true(xdata, tdata)
+
+# tre = p.domain.Time_NRect(1, [-1], [1], [0,1])
+# bound = p.boundaries.periodic(tre)
+# inits = p.initials.initials(tre, [u0])
+# dat = p.data.timeinvpinndata(tre, bound, inits, [tdata, xdata], [udata], 8000, 10, 200)
+# mymodel = p.models.invpinn(dat, ["ut+c*ux1"], ["c"])
+# mymodel.train(1)
+# print(mymodel.get_trained_constants())
+# p.plotters.plot_solution_prediction_time1D(mymodel)
+# p.plotters.plot_epoch_loss(mymodel)
+
+# Heat
+# h = 0.08
+# u_true = lambda x, t: np.e**(-((np.pi**2) * h * t))*np.sin(np.pi*x)
+# N_data = 400
+# xdata = np.random.uniform(0, 1, N_data)
+# tdata = np.random.uniform(0, 1, N_data)
+# udata = u_true(xdata, tdata)
+
+# tre = p.domain.Time_NRect(1, [0], [1], [0,1])
+# bound = p.boundaries.dirichlet(tre, [lambda t, x1: 0+t*0 ])
+# inits = p.initials.initials(tre, [lambda x1: tf.sin(np.pi*x1)])
+# dat = p.data.timeinvpinndata(tre, bound, inits, [tdata, xdata], [udata], 12000, 1000, 1000)
+# mymodel = p.models.invpinn(dat, ["h*ux1x1 - ut"], ["h"])
+# mymodel.train(1500)
+# p.plotters.plot_solution_prediction_time1D(mymodel)
+# p.plotters.plot_epoch_loss(mymodel)
+
+# Heat 3D
+# h = 0.08
+# u_true = lambda t, x1, x2: np.e**(-((np.pi**2) * h * t))*np.sin(np.pi*x1)*np.sin(np.pi*x2)
+# N_data = 500
+# x1data = np.random.uniform(0, 1, N_data)
+# x2data = np.random.uniform(0, 1, N_data)
+# tdata = np.random.uniform(0, 1, N_data)
+# udata = u_true(tdata, x1data, x2data)
+# tre = p.domain.Time_NRect(2, [0, 0], [1, 1], [0,1])
+# bound = p.boundaries.dirichlet(tre, [lambda t, x1, x2: 0+t*0 ])
+# inits = p.initials.initials(tre, [lambda x1, x2: tf.sin(np.pi*x1)*tf.sin(np.pi*x2)])
+# dat = p.data.timeinvpinndata(tre, bound, inits, [tdata, x1data, x2data], [udata], 12000, 600, 600)
+# mymodel = p.models.invpinn(dat, ["h*ux1x1 + h*ux2x2 - ut"], ["h"])
+# mymodel.train(2000)
+# print(mymodel.get_trained_constants())
+# p.plotters.plot_solution_prediction_time2D(mymodel)
+# p.plotters.plot_epoch_loss(mymodel)
+
+# Poisson
+# d = 1
+# u_true = lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)
+# N_data = 500
+# x1data = np.random.uniform(-1, 1, N_data)
+# x2data = np.random.uniform(-1, 1, N_data)
+# udata = u_true(x1data, x2data)
+re2 = p.domain.NRect(2, [-1, -1], [1, 1])
+bound2 = p.boundaries.dirichlet(re2, [lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)])
+# dat2 = p.data.invpinndata(re2, bound2, [x1data, x2data], [udata], 12000, 1000)
+# mymodel = p.models.invpinn(dat2, ["d*ux1x1 + d*ux2x2 - (-2*np.pi**2*tf.cos(np.pi*x1)*tf.sin(np.pi*x2))"], ["d"])
+dat2 = p.data.pinndata(re2, bound2, 12000, 1000)
+mymodel = p.models.pinn(dat2, ["ux1x1 + ux2x2 - (-2*np.pi**2*tf.cos(np.pi*x1)*tf.sin(np.pi*x2))"])
+mymodel.train(1000)
+# print(mymodel.get_trained_constants())
+p.plotters.plot_solution_prediction_2D(mymodel)
+p.plotters.plot_epoch_loss(mymodel)

@@ -28,6 +28,8 @@ nav:
       - timepinndata: data/timepinndata.md
       - dondata: data/dondata.md
       - timedondata: data/timedondata.md
+      - invpinndata: data/invpinndata.md
+      - timeinvpinndata: data/timeinvpinndata.md
     
     - domain:
       - domain: domain/domain.md
@@ -103,6 +105,7 @@ nav:
     - models:
       - pinn: models/pinn.md
       - deeponet: models/deeponet.md
+      - invpinn: models/invpinn.md
 
     - plotters:
       - plotLosses: plotters/plotLosses.md
@@ -111,6 +114,7 @@ nav:
     - training:
       - pinnTrainSteps: training/pinnTrainSteps.md
       - deeponetTrainSteps: training/deeponetTrainSteps.md
+      - invpinnTrainSteps: training/invpinnTrainSteps.md
 
     - initials: initials/initials.md
 
