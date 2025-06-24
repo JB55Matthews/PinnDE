@@ -25,7 +25,7 @@ We then define the boundaries for the domain. We will use Dirichlet boundaries s
 must be of all dimensions, x1 and x2.
 
     bdryfunc = lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)
-    bound = p.boundaries.dirichlet(re, [bdryfunc])
+    bound = p.boundaries.dirichlet(re, [bdryfunc]) 
 
 We then create the data for the deeponet to train on. As we have no time component and we will use a deeponet, we create a deeponetdata 
 object.

@@ -8,6 +8,12 @@ from ..models.invpinn import invpinn
 import tensorflow as tf
 
 def plot_solution_prediction_1D(model):
+    """
+    Plots the predicted solution for an 1 spatial dimension (ODE) trained model.
+
+    Args:
+        model (model): Model which has been trained on a 1 dimensional NRect.
+    """
     eqns = model.get_eqns()
     network = model.get_network()
     domain = model.get_domain()
@@ -54,6 +60,12 @@ def plot_solution_prediction_1D(model):
     return
 
 def plot_solution_prediction_time1D(model):
+    """
+    Plots the predicted solution for an 1+1 PDE trained model.
+
+    Args:
+        model (model): Model which has been trained for a 1+1 equation.
+    """
     eqns = model.get_eqns()
     network = model.get_network()
     domain = model.get_domain()
@@ -103,6 +115,12 @@ def plot_solution_prediction_time1D(model):
     return
 
 def plot_solution_prediction_2D(model):
+    """
+    Plots the predicted solution for an 2 spatial dimension PDE trained model.
+
+    Args:
+        model (model): Model which has been trained for a 2D equation.
+    """
     network = model.get_network()
     domain = model.get_domain()
     eqns = model.get_eqns()
@@ -219,6 +237,12 @@ def plot_solution_prediction_2D(model):
 #     return
 
 def plot_solution_prediction_time2D(model):
+    """
+    Plots the predicted solution for an 1+2 PDE trained model.
+
+    Args:
+        model (model): Model which has been trained for a 1+2 equation.
+    """
     eqns = model.get_eqns()
     network = model.get_network()
     domain = model.get_domain()
