@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from ..models.pinn import pinn
 from ..models.deeponet import deeponet
+from ..models.invpinn import invpinn
 import tensorflow as tf
 
 def plot_solution_prediction_1D(model):
@@ -31,6 +32,9 @@ def plot_solution_prediction_1D(model):
         sensors = u.numpy()    
         sols = network([np.expand_dims(t, axis=1), sensors])
         sols = tf.squeeze(sols, axis=1)
+    
+    elif (isinstance(model, invpinn)):
+        sols = network(np.expand_dims(t, axis=1))[:-len(model.get_constants())]
 
     if len(eqns) == 1:
         plt.figure()
@@ -72,6 +76,7 @@ def plot_solution_prediction_time1D(model):
     
     if (isinstance(model, pinn)):
         sols = network([np.expand_dims(T.flatten(), axis=1), np.expand_dims(X.flatten(), axis=1)])
+
     elif (isinstance(model, deeponet)):
         x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
         amplitudes = np.random.randn(3, 1)
@@ -81,6 +86,9 @@ def plot_solution_prediction_time1D(model):
             u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])
         sensors = u.numpy()
         sols = network([np.expand_dims(T.flatten(), axis=1), np.expand_dims(X.flatten(), axis=1), sensors])
+
+    elif (isinstance(model, invpinn)):
+        sols = network([np.expand_dims(T.flatten(), axis=1), np.expand_dims(X.flatten(), axis=1)])[:-len(model.get_constants())]
 
     if len(eqns) == 1:
         sols = np.reshape(sols, (200, 200))
@@ -133,6 +141,9 @@ def plot_solution_prediction_2D(model):
             u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])*tf.sin((i+1)*np.expand_dims(y, axis=0)+ phases[i])
         sensors = u.numpy()
         sols = network([np.expand_dims(X1.flatten(), axis=1), np.expand_dims(X2.flatten(), axis=1), sensors])
+
+    elif (isinstance(model, invpinn)):
+        sols = network([np.expand_dims(X1.flatten(), axis=1), np.expand_dims(X2.flatten(), axis=1)])[:-len(model.get_constants())]
 
     if len(eqns) == 1:
         sols = np.reshape(sols, (200, 200))
@@ -293,6 +304,23 @@ def plot_solution_prediction_time2D(model):
                                 X1.flatten()[:, None], 
                                 X2.flatten()[:, None],
                                 sensors])
+                sol_pred = sol_pred.numpy().reshape(X1.shape)
+                
+                # Apply domain mask
+                sol_pred[~mask] = np.nan  # Mask outside domain
+                
+                sols.append(sol_pred)
+                current_max = np.nanmax(sol_pred)
+                current_min = np.nanmin(sol_pred)
+                if current_max > max_val:
+                    max_val = current_max
+                if current_min < min_val:
+                    min_val = current_min
+
+            elif isinstance(model, invpinn):
+                sol_pred = network([t[:, None], 
+                                X1.flatten()[:, None], 
+                                X2.flatten()[:, None]])[0]
                 sol_pred = sol_pred.numpy().reshape(X1.shape)
                 
                 # Apply domain mask
