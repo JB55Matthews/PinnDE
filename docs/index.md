@@ -24,6 +24,9 @@ PINNs
 * Solve purely spatial equations
 * Simple to use plotting modules for 1+1, 1+2, spatio-temporal equations, and 1 and 2 dimensional spatial equations
 
+* **Inverse PINNs**
+    * Solving inverse problems for constants on any problem described above
+
 DeepONets
 -----
 * Arbitrary order ODEs/PDEs

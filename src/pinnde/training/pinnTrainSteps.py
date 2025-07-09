@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import ast
 
-def trainStep(eqns, clps, bcs, network, boundary):
+def trainStep(eqns, clps, bcs, network, boundary, constraint):
     """
     Main training step for purely spatial problems.
 
@@ -12,6 +12,7 @@ def trainStep(eqns, clps, bcs, network, boundary):
         bcs (tensor): Sampled boundary points which have been processed for training.
         network (model): TensorFlow pinn to train.
         boundary (boundaries): Boundary in which model is trained over.
+        constraint (string): Soft or Hard constraining network.
 
     Returns Collocation point loss, boundary point loss, and gradients to optimize
     """
@@ -66,8 +67,11 @@ def trainStep(eqns, clps, bcs, network, boundary):
             CLPloss = tf.cast(CLPloss, tf.float32)
 
         BCloss = 0
+        if constraint == "hard":
+            BCloss = tf.cast(0, tf.float32)
+
         # periodic
-        if bdry_type == 1:
+        elif bdry_type == 1:
             BCloss = tf.cast(0, tf.float32)
            
         # dirichlet
@@ -139,7 +143,7 @@ def trainStep(eqns, clps, bcs, network, boundary):
     return CLPloss, BCloss, grads
 
 
-def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders):
+def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders, constraint):
     """
     Main training step for spatio-temporal problems.
 
@@ -151,6 +155,7 @@ def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders):
         network (model): TensorFlow pinn to train.
         boundary (boundaries): Boundary in which model is trained over.
         t_orders (list): List of orders of time of each equation training on.
+        constraint (string): Soft or Hard constraining network.
 
     Returns Collocation point loss, boundary point loss, initial point loss, and gradients to optimize
     """
@@ -232,9 +237,11 @@ def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders):
             CLPloss = tf.cast(CLPloss, tf.float32)
         
         BCloss = 0
+        if constraint == "hard":
+            BCloss = tf.cast(0, tf.float32)
 
         # periodic
-        if bdry_type == 1:
+        elif bdry_type == 1:
             BCloss = tf.cast(0, tf.float32)
             
         # dirichlet
@@ -274,26 +281,30 @@ def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders):
     
 
         ICloss = 0
-        with tf.GradientTape(persistent=True) as tape2:
-            for col in ics_group:
-                tape2.watch(col)
+        if constraint == "hard":
+            ICloss = tf.cast(0, tf.float32)
 
-            dim_iter = dim
+        else:
+            with tf.GradientTape(persistent=True) as tape2:
+                for col in ics_group:
+                    tape2.watch(col)
 
-            for e in range(len(eqns)):
-                if (len(eqns) == 1):
-                    u_init_pred = network(ics_group[:dim+1])
-                else:
-                    u_init_pred = network(ics_group[:dim+1])[e]
+                dim_iter = dim
 
-                ICloss += tf.reduce_mean(tf.square(u_init_pred - tf.cast(ics_group[dim_iter+1], tf.float32)))
-                dim_iter += 1
+                for e in range(len(eqns)):
+                    if (len(eqns) == 1):
+                        u_init_pred = network(ics_group[:dim+1])
+                    else:
+                        u_init_pred = network(ics_group[:dim+1])[e]
 
-                for i in range(t_orders[e]-1):
-                    next_pred = tf.cast(tape2.gradient(u_init_pred, ics_group[0]), tf.float32)
-                    ICloss += tf.reduce_mean(tf.square(next_pred - tf.cast(ics_group[(dim_iter+1)], tf.float32)))
-                    u_init_pred = next_pred
+                    ICloss += tf.reduce_mean(tf.square(u_init_pred - tf.cast(ics_group[dim_iter+1], tf.float32)))
                     dim_iter += 1
+
+                    for i in range(t_orders[e]-1):
+                        next_pred = tf.cast(tape2.gradient(u_init_pred, ics_group[0]), tf.float32)
+                        ICloss += tf.reduce_mean(tf.square(next_pred - tf.cast(ics_group[(dim_iter+1)], tf.float32)))
+                        u_init_pred = next_pred
+                        dim_iter += 1
         
     
         loss = CLPloss + BCloss + ICloss

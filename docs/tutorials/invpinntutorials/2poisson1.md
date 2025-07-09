@@ -1,0 +1,105 @@
+# Solving the constant in the Poisson equation with Dirichlet boundaries with an Inverse PINN
+
+## Problem
+We will look at solving for the constant d in a specific instance of the Poisson equation
+
+$$d\frac{\partial^2 u}{\partial x^2} + d\frac{\partial^2 u}{\partial y^2} = -2\pi^2\cos(\pi x)\sin(\pi y)$$
+
+Over $x\in[-1,1], y\in[-1,1]$, with boundary conditions
+
+$$u(x, -1) = u(x, 1) = u(-1, y) = u(1, y) = \cos(\pi x)\sin(\pi y)$$
+
+## Implementation
+First import package. Since we need to represent pi for the boundary condition, we also import numpy. We also use tensorflow's cos.
+    
+    import pinnde as p
+    import numpy as np
+    import tensorflow as tf
+
+We first then generate our sample data. We have the reference solution to this problem, with d=1, and so we generate data along x1, x2 
+and for the reference solution u to mimic having experimental data.
+
+    d = 1
+    u_true = lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)
+    N_data = 600
+    x1data = np.random.uniform(-1, 1, N_data)
+    x2data = np.random.uniform(-1, 1, N_data)
+    udata = u_true(x1data, x2data)
+
+We then create our domain. We will solve this on the square from -1 to 1, so we create a NRect with 2 spatial dimensions, with xmins 
+[-1, -1] and xmaxs [1, 1]. 
+
+    re = p.domain.NRect(2, [-1, -1], [1, 1])
+
+We then define the boundaries for the domain. We will use Dirichlet boundaries set to zero. Note our lambda function
+must be of all dimensions, x1 and x2.
+
+    bdryfunc = lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)
+    bound = p.boundaries.dirichlet(re, [bdryfunc])
+
+We then create the data for the pinn to train on. As we have no time component and we will use an inverse pinn, we create a invpinndata object.
+
+    dat = p.data.invpinndata(re, bound, [x1data, x2data], [udata], 12000, 800)
+
+Then, we create the invpinn model class and train the model for our desired epochs. When defining our equation, all spatial variables are denoted
+x1, x2, etc. So our equation is defined as follows.
+
+    eqn = "d*ux1x1 + d*ux2x2 - (-2*np.pi**2*tf.cos(np.pi*x1)*tf.sin(np.pi*x2))"
+    mymodel = p.models.pinn(dat, [eqn], ["d"])
+    mymodel.train(2500)
+
+If we want to quickly visualize our solution and epoch loss, we call the in-built plotting functions for this type of equation. We can also get what the constants trained from the network as well.
+
+    print(mymodel.get_trained_constants())
+    p.plotters.plot_solution_prediction_2D(mymodel)
+    p.plotters.plot_epoch_loss(mymodel)
+
+## All Code
+
+    import pinnde as p
+    import numpy as np
+    import tensorflow as tf
+
+    d = 1
+    u_true = lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)
+    N_data = 600
+    x1data = np.random.uniform(-1, 1, N_data)
+    x2data = np.random.uniform(-1, 1, N_data)
+    udata = u_true(x1data, x2data)
+
+    re = p.domain.NRect(2, [-1, -1], [1, 1])
+
+    bdryfunc = lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)
+    bound = p.boundaries.dirichlet(re, [bdryfunc])
+
+    dat = p.data.invpinndata(re, bound, [x1data, x2data], [udata], 12000, 800)
+
+    eqn = "d*ux1x1 + d*ux2x2 - (-2*np.pi**2*tf.cos(np.pi*x1)*tf.sin(np.pi*x2))"
+    mymodel = p.models.invpinn(dat, [eqn])
+    mymodel.train(2500)
+
+    print(mymodel.get_trained_constants())
+    p.plotters.plot_solution_prediction_2D(mymodel)
+    p.plotters.plot_epoch_loss(mymodel)
+
+Or more concisely,
+
+    import pinnde as p
+    import numpy as np
+    import tensorflow as tf
+
+    d = 1
+    u_true = lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)
+    N_data = 600
+    x1data = np.random.uniform(-1, 1, N_data)
+    x2data = np.random.uniform(-1, 1, N_data)
+    udata = u_true(x1data, x2data)
+
+    re = p.domain.NRect(2, [-1, -1], [1, 1])
+    bound = p.boundaries.dirichlet(re, [lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)])
+    dat = p.data.invpinndata(re, bound, [x1data, x2data], [udata], 12000, 800)
+    mymodel = p.models.invpinn(dat, ["d*ux1x1 + d*ux2x2 - (-2*np.pi**2*tf.cos(np.pi*x1)*tf.sin(np.pi*x2))"], ["d"])
+    mymodel.train(2500)
+    print(mymodel.get_trained_constants())
+    p.plotters.plot_solution_prediction_2D(mymodel)
+    p.plotters.plot_epoch_loss(mymodel)
