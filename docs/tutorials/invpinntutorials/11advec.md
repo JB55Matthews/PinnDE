@@ -83,10 +83,10 @@ If we want to quickly visualize our solution and epoch loss, we call the in-buil
     u0func = lambda x1: tf.cos(np.pi*x1)
     inits = p.initials.initials(tre, [u0])
 
-    dat = p.data.timepinndata(tre, bound, inits, [tdata, xdata], [udata], 12000, 10, 200)
+    dat = p.data.timeinvpinndata(tre, bound, inits, [tdata, xdata], [udata], 12000, 10, 200)
 
     eqn = "ut+c*ux1"
-    mymodel = p.models.pinn(dat, [eqn], ["c"])
+    mymodel = p.models.invpinn(dat, [eqn], ["c"])
     mymodel.train(1500)
 
     print(mymodel.get_trained_constants())
