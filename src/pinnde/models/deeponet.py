@@ -92,8 +92,9 @@ class deeponet():
         out = tf.keras.layers.Dense(1)(out)
 
         if pinnSelectors.pinnSelector(self._constraint)():
-          if constraintSelector.constraintSelector() != None:
-            out = tf.keras.layers.Lambda(constraintSelector.constraintSelector())([inlist, out])
+          if constraintSelector.constraintSelector(self._domain, self._eqns) != None:
+            out = tf.keras.layers.Lambda(constraintSelector.constraintSelector(self._domain, self._boundaries, self._eqns, self._initials), 
+                                         output_shape=(1,))([inlist, out])
           pass
 
         model = tf.keras.models.Model(inlist, out)
@@ -227,7 +228,7 @@ class deeponet():
 
         for (clps, bcs, usensors) in ds:
 
-          CLPloss, BCloss, grads = deeponetTrainSteps.trainStep(eqns, clps, bcs, usensors, self._network, self._boundaries)
+          CLPloss, BCloss, grads = deeponetTrainSteps.trainStep(eqns, clps, bcs, usensors, self._network, self._boundaries, self._constraint)
           opt.apply_gradients(zip(grads, self._network.trainable_variables))
           n_batches += 1
           epoch_loss[i] += CLPloss + BCloss
@@ -305,7 +306,7 @@ class deeponet():
           # print(ics.shape)
           
           CLPloss, BCloss, ICloss, grads = deeponetTrainSteps.trainStepTime(eqns, clps, bcs, ics, usensors, self._network, 
-                                                                      self._boundaries, self._t_orders)
+                                                                      self._boundaries, self._t_orders, self._constraint)
           opt.apply_gradients(zip(grads, self._network.trainable_variables))
           n_batches += 1
           epoch_loss[i] += CLPloss + BCloss

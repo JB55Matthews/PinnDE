@@ -9,6 +9,7 @@ nav:
   - Tutorials:
     - PINNs: tutorials/pinntutorials/pinntutorials.md
     - DeepONets: tutorials/deeponettutorials/deeponettutorials.md
+    - Inverse PINNs: tutorials/invpinntutorials/invpinntutorials.md
     - Legacy:
       - ODEs: tutorials/legacy/Tutorials_ODEs/ODE_Tutorials.md
       - PDEs in t and x: tutorials/legacy/Tutorials_PDEs_tx/PDE_tx_tutorials.md

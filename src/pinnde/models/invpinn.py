@@ -92,8 +92,9 @@ class invpinn():
           outs.append(out)
 
         if pinnSelectors.pinnSelector(self._constraint)():
-          if constraintSelector.constraintSelector() != None:
-            out = tf.keras.layers.Lambda(constraintSelector.constraintSelector())([inlist, out])
+          if constraintSelector.constraintSelector(self._domain, self._eqns) != None:
+            out = tf.keras.layers.Lambda(constraintSelector.constraintSelector(self._domain, self._boundaries, self._eqns, self._initials), 
+                                         output_shape=(1,))([inlist, out])
           pass
 
         model = tf.keras.models.Model(inlist, outs)
@@ -218,7 +219,8 @@ class invpinn():
 
         for (clps, bcs, invps) in ds:
 
-          CLPloss, BCloss, dataLoss, grads = invpinnTrainSteps.trainStep(eqns, clps, bcs, invps, self._network, self._boundaries, self._constants)
+          CLPloss, BCloss, dataLoss, grads = invpinnTrainSteps.trainStep(eqns, clps, bcs, invps, self._network, self._boundaries,
+                                                                         self._constraint, self._constants)
           opt.apply_gradients(zip(grads, self._network.trainable_variables))
           n_batches += 1
           epoch_loss[i] += CLPloss + BCloss
@@ -282,7 +284,7 @@ class invpinn():
         for (clps, bcs, ics, invps) in ds:
           
           CLPloss, BCloss, ICloss, dataLoss, grads = invpinnTrainSteps.trainStepTime(eqns, clps, bcs, ics, invps, self._network, 
-                                                                      self._boundaries, self._t_orders, self._constants)
+                                                                      self._boundaries, self._t_orders, self._constraint, self._constants)
           opt.apply_gradients(zip(grads, self._network.trainable_variables))
           n_batches += 1
           epoch_loss[i] += CLPloss + BCloss
