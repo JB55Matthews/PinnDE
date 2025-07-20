@@ -11,7 +11,7 @@ Examples for solving differential equations with PINNs using PinnDE
 
 ## Purely Spatial
 
-* [2D Poisson equation (#1) with Dirichlet boundaries](2poisson1.md)
+* [2D Poisson equation (#1) with Dirichlet boundaries with L-BFGS Optimization](2poisson1.md)
 * [System of ODEs with initial values](odesys.md)
 * [2D Helmholtz equation with Dirichlet boundaries](2helmholtz.md)
 * [2D Poisson equation (#2) with Dirichlet boundaries](2poisson2.md)

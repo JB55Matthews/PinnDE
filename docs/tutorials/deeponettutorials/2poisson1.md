@@ -1,4 +1,4 @@
-# Solving the Poisson equation with Dirichlet boundaries with a DeepONet
+# Solving the Poisson equation with Dirichlet boundaries with a DeepONet with LBFGS Optimization
 
 ## Problem
 We will look at solving a specific instance of the Poisson equation
@@ -37,7 +37,7 @@ x1, x2, etc. So our equation is defined as follows.
 
     eqn = "ux1x1 + ux2x2 - (-2*np.pi**2*tf.cos(np.pi*x1)*tf.sin(np.pi*x2))"
     mymodel = p.models.deeponet(dat, [eqn])
-    mymodel.train(1500)
+    mymodel.train(500, opt="lbfgs")
 
 If we want to quickly visualize our solution and epoch loss, we call the in-built plotting functions for this type of equation.
 
@@ -59,7 +59,7 @@ If we want to quickly visualize our solution and epoch loss, we call the in-buil
 
     eqn = "ux1x1 + ux2x2 - (-2*np.pi**2*tf.cos(np.pi*x1)*tf.sin(np.pi*x2))"
     mymodel = p.models.deeponet(dat, [eqn])
-    mymodel.train(1500)
+    mymodel.train(500, opt="lbfgs")
 
     p.plotters.plot_solution_prediction_2D(mymodel)
     p.plotters.plot_epoch_loss(mymodel)
@@ -74,6 +74,6 @@ Or more concisely,
     bound = p.boundaries.dirichlet(re, [lambda x1, x2: tf.cos(np.pi*x1)*tf.sin(np.pi*x2)])
     dat = p.data.dondata(re, bound, 12000, 1000, 2000)
     mymodel = p.models.deeponet(dat, ["ux1x1 + ux2x2 - (-2*np.pi**2*tf.cos(np.pi*x1)*tf.sin(np.pi*x2))"])
-    mymodel.train(1500)
+    mymodel.train(500, opt="lbfgs")
     p.plotters.plot_solution_prediction_2D(mymodel)
     p.plotters.plot_epoch_loss(mymodel)

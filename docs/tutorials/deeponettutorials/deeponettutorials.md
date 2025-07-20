@@ -11,7 +11,7 @@ Examples for solving differential equations with DeepONets using PinnDE
 
 ## Purely Spatial
 
-* [2D Poisson equation (#1) with Dirichlet boundaries](2poisson1.md)
+* [2D Poisson equation (#1) with Dirichlet boundaries with L-BFGS Optimization](2poisson1.md)
 * [ODE with initial values](ode.md)
 * [2D Helmholtz equation with Dirichlet boundaries](2helmholtz.md)
 * [2D Poisson equation (#2) with Dirichlet boundaries](2poisson2.md)

@@ -1,6 +1,6 @@
 from ..selectors import pinnSelectors, constraintSelector
 from ..data import timedondata
-from ..training import deeponetTrainSteps 
+from ..training import deeponetTrainSteps, lbfgsTrainSteps
 import tensorflow as tf
 import numpy as np
 
@@ -58,6 +58,8 @@ class deeponet():
           self._icp = data.get_icp()
           self._t_orders = self._initials.get_orders()
           n += 1
+        else:
+          self._initials = None
 
         # ---------
         inlist = []
@@ -92,9 +94,11 @@ class deeponet():
         out = tf.keras.layers.Dense(1)(out)
 
         if pinnSelectors.pinnSelector(self._constraint)():
-          if constraintSelector.constraintSelector(self._domain, self._eqns) != None:
+          lambda_input = inlist[:-1] + [out]
+          if constraintSelector.constraintSelector(self._domain, self._boundaries, self._eqns, self._initials) != None:
             out = tf.keras.layers.Lambda(constraintSelector.constraintSelector(self._domain, self._boundaries, self._eqns, self._initials), 
-                                         output_shape=(1,))([inlist, out])
+                                         output_shape=(1,))(lambda_input)
+            out = [out]
           pass
 
         model = tf.keras.models.Model(inlist, out)
@@ -172,9 +176,36 @@ class deeponet():
       """
       self._epochs = epochs
       if isinstance(self._data, timedondata):
-        self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
+        if opt == "lbfgs":
+          # raise NotImplementedError("L-BFGS optimizer not currently supported for DeepONet") 
+          ds_clp = tf.data.Dataset.from_tensor_slices(self._data.get_clp())
+          ds_bc = tf.data.Dataset.from_tensor_slices(self._data.get_bcp())
+          ds_ic = tf.data.Dataset.from_tensor_slices(self._data.get_icp())
+          ds_u = tf.data.Dataset.from_tensor_slices(self._data.get_sensors())
+          ds = tf.data.Dataset.zip((ds_clp, ds_bc, ds_ic, ds_u))
+          ds = ds.cache().shuffle(self._clp.shape[0]).batch(max(self._data.get_n_bc(), self._data.get_n_ic(), self._data.get_n_sensors()))
+          ds = ds.prefetch(tf.data.experimental.AUTOTUNE)
+          for (clps, bcs, ics, usensors) in ds:
+            data = [clps, bcs, ics, usensors]
+          extras = [self._boundaries, self._t_orders, self._constraint]
+          self._epoch_loss, self._epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, self._epochs, deeponetTrainSteps.trainStepTime, data, extras)
+        else:
+          self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
       else:
-        self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)      
+        if opt == "lbfgs":
+          # raise NotImplementedError("L-BFGS optimizer not currently supported for DeepONet")
+          ds_clp = tf.data.Dataset.from_tensor_slices(self._data.get_clp())
+          ds_bc = tf.data.Dataset.from_tensor_slices(self._data.get_bcp())
+          ds_u = tf.data.Dataset.from_tensor_slices(self._data.get_sensors())
+          ds = tf.data.Dataset.zip((ds_clp, ds_bc, ds_u))
+          ds = ds.cache().shuffle(self._clp.shape[0]).batch(max(self._data.get_n_bc(), self._data.get_n_sensors()))
+          ds = ds.prefetch(tf.data.experimental.AUTOTUNE)
+          for (clps, bcs, usensors) in ds:
+            data = [clps, bcs, usensors]
+          extras = [self._boundaries, self._constraint]
+          self._epoch_loss, self._epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, self._epochs, deeponetTrainSteps.trainStep, data, extras)
+        else:
+          self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)      
     
 
     def trainNoTime(self, eqns, epochs, opt, meta, adapt_pt):
@@ -258,7 +289,6 @@ class deeponet():
         adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
       """
       
-      print(self._clp.shape, self._sensors.shape)
       lr = tf.keras.optimizers.schedules.PolynomialDecay(1e-3, epochs, 1e-4)
       opt = pinnSelectors.pinnSelector(opt)(lr)
       bs_clp, bs_bcp, bs_icp, bs_u = self._data.get_n_clp(), self._data.get_n_bc(), self._data.get_n_ic(), self._data.get_n_sensors()
@@ -304,6 +334,7 @@ class deeponet():
 
         for (clps, bcs, ics, usensors) in ds:
           # print(ics.shape)
+          # print(usensors.shape)
           
           CLPloss, BCloss, ICloss, grads = deeponetTrainSteps.trainStepTime(eqns, clps, bcs, ics, usensors, self._network, 
                                                                       self._boundaries, self._t_orders, self._constraint)
