@@ -1,6 +1,6 @@
 from ..selectors import pinnSelectors, constraintSelector
 from ..data import timepinndata
-from ..training import pinnTrainSteps 
+from ..training import pinnTrainSteps, lbfgsTrainSteps 
 import tensorflow as tf
 import numpy as np
 
@@ -88,9 +88,11 @@ class pinn():
           outs.append(out)
 
         if pinnSelectors.pinnSelector(self._constraint)():
+          lambda_input = inlist + [out]
           if constraintSelector.constraintSelector(self._domain, self._boundaries, self._eqns, self._initials) != None:
             out = tf.keras.layers.Lambda(constraintSelector.constraintSelector(self._domain, self._boundaries, self._eqns, self._initials), 
-                                         output_shape=(1,))([inlist, out])
+                                         output_shape=(1,))(lambda_input)
+            outs = [out]
           pass
 
         model = tf.keras.models.Model(inlist, outs)
@@ -153,10 +155,21 @@ class pinn():
         adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
       """
       self._epochs = epochs
+      
       if isinstance(self._data, timepinndata):
-        self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
+        if opt == "lbfgs":
+          data = [tf.convert_to_tensor(self._data.get_clp()), tf.convert_to_tensor(self._data.get_bcp()),tf.convert_to_tensor(self._data.get_icp())]
+          extras = [self._boundaries, self._t_orders, self._constraint]
+          self._epoch_loss, self._epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, self._epochs, pinnTrainSteps.trainStepTime, data, extras)
+        else:
+          self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
       else:
-        self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)      
+        if opt == "lbfgs":
+          data = [tf.convert_to_tensor(self._data.get_clp()), tf.convert_to_tensor(self._data.get_bcp())]
+          extras = [self._boundaries, self._constraint]
+          self._epoch_loss, self._epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, self._epochs, pinnTrainSteps.trainStep, data, extras)
+        else:
+          self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)      
     
 
     def trainNoTime(self, eqns, epochs, opt, meta, adapt_pt):

@@ -4,9 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pinnde"
-version = "1.0.2"
+version = "1.1.0"
 dependencies = [
-  "tensorflow >= 2.16.1",
+  "tensorflow >= 2.18.0",
+  "tensorflow_probability >= 0.25.0",
+  "tf_keras >= 2.18.0",
   "numpy",
   "pyDOE",
   "matplotlib",

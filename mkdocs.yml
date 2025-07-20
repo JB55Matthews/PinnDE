@@ -116,6 +116,7 @@ nav:
       - pinnTrainSteps: training/pinnTrainSteps.md
       - deeponetTrainSteps: training/deeponetTrainSteps.md
       - invpinnTrainSteps: training/invpinnTrainSteps.md
+      - lbfgsTrainSteps: training/lbfgsTrainSteps.md
 
     - initials: initials/initials.md
 

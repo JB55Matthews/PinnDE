@@ -63,7 +63,8 @@ def constraintSelector(domain, boundaries, eqns, initials=None):
                 x1, y1 = domain.get_max_dim_vals()
                 xleft_bound, xright_bound = boundaries.get_lambdas()[0], boundaries.get_lambdas()[1]
                 ylower_bound, yupper_bound = boundaries.get_lambdas()[2], boundaries.get_lambdas()[3]
-                lambda x: (1-((x[0]-x0)/(x1-x0)))*xleft_bound(x0, x[1]) + \
+                
+                return lambda x: (1-((x[0]-x0)/(x1-x0)))*xleft_bound(x0, x[1]) + \
                               ((x[0]-x0)/(x1-x0))*xright_bound(x1, x[1]) + (1-((x[1]-y0)/(y1-y0)))* \
                               (ylower_bound(x[0], y0) - ((1-((x[0]-x0)/(x1-x0)))*ylower_bound(x0, y0) + \
                                ((x[0]-x0)/(x1-x0)*ylower_bound(x1, y0)))) + \
@@ -72,6 +73,7 @@ def constraintSelector(domain, boundaries, eqns, initials=None):
                                ((x[0]-x0)/(x1-x0)*yupper_bound(x1, y1)))) + \
                                ((x[0]-x0)/(x1-x0))*(1-((x[0]-x0)/(x1-x0)))* \
                                ((x[1]-y0)/(y1-y0))*(1-((x[1]-y0)/(y1-y0)))*x[2]
+    
         else: 
             raise ValueError("Hard constrained currently not supported for this")
 

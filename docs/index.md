@@ -37,4 +37,4 @@ DeepONets
 * Solve purely spatial equations
 * Simple to use plotting modules for 1+1, 1+2, spatio-temporal equations, and 1 and 2 dimensional spatial equations
 
-We provide Periodic, Dirichlet, and Neumann boundary conditions for each of these PDE problems
+We provide Periodic, Dirichlet, and Neumann boundary conditions for each of these PDE problems. We also provide L-BFGS optimization for these networks.

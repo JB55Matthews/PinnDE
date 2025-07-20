@@ -1,6 +1,6 @@
 from ..selectors import pinnSelectors, constraintSelector
 from ..data import timeinvpinndata
-from ..training import invpinnTrainSteps 
+from ..training import invpinnTrainSteps, lbfgsTrainSteps
 import tensorflow as tf
 import numpy as np
 
@@ -59,6 +59,8 @@ class invpinn():
           self._icp = data.get_icp()
           self._t_orders = self._initials.get_orders()
           n += 1
+        else:
+          self._initials = None
 
         # ---------
         inlist = []
@@ -92,9 +94,11 @@ class invpinn():
           outs.append(out)
 
         if pinnSelectors.pinnSelector(self._constraint)():
-          if constraintSelector.constraintSelector(self._domain, self._eqns) != None:
+          lambda_input = inlist + [out]
+          if constraintSelector.constraintSelector(self._domain, self._boundaries, self._eqns, self._initials) != None:
             out = tf.keras.layers.Lambda(constraintSelector.constraintSelector(self._domain, self._boundaries, self._eqns, self._initials), 
-                                         output_shape=(1,))([inlist, out])
+                                         output_shape=(1,))(lambda_input)
+            outs = [out]
           pass
 
         model = tf.keras.models.Model(inlist, outs)
@@ -172,9 +176,25 @@ class invpinn():
       """
       self._epochs = epochs
       if isinstance(self._data, timeinvpinndata):
-        self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
+        if opt == "lbfgs":
+          if self._constraint == "hard":
+            raise NotImplementedError("L-BFGS optimizer not currently supported for hard constrained Inverse PINN")
+          data = [tf.convert_to_tensor(self._data.get_clp()), tf.convert_to_tensor(self._data.get_bcp()),tf.convert_to_tensor(self._data.get_icp()),tf.convert_to_tensor(self._data.get_invp())]
+          extras = [self._boundaries, self._t_orders, self._constraint, self._constants]
+          self._epoch_loss, self._epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, self._epochs, invpinnTrainSteps.trainStepTime, data, extras)
+          self._trained_constants = self.findTrainedConstants()
+        else:
+          self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
       else:
-        self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)      
+        if opt == "lbfgs":
+          if self._constraint == "hard":
+            raise NotImplementedError("L-BFGS optimizer not currently supported for hard constrained Inverse PINN")
+          data = [tf.convert_to_tensor(self._data.get_clp()), tf.convert_to_tensor(self._data.get_bcp()),tf.convert_to_tensor(self._data.get_invp())]
+          extras = [self._boundaries, self._constraint, self._constants]
+          self._epoch_loss, self._epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, self._epochs, invpinnTrainSteps.trainStep, data, extras)
+          self._trained_constants = self.findTrainedConstants()
+        else:
+          self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)      
     
 
     def trainNoTime(self, eqns, epochs, opt, meta, adapt_pt):
