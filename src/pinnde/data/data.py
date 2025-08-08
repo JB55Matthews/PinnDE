@@ -27,3 +27,10 @@ class data():
             type (int): Data type.
         """
         self._data_type = type
+
+    def set_clp(self, clp):
+        """
+        Args:
+            clp (tensor): New collocation points.
+        """
+        self._clp = clp

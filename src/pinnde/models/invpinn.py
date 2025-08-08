@@ -164,7 +164,7 @@ class invpinn():
       return self._trained_constants
   
 
-    def train(self, epochs, opt="adam", meta="false", adapt_pt="false"):
+    def train(self, epochs, opt="adam", meta="false", adapt_pt=None):
       """
       Main training function
       
@@ -172,7 +172,7 @@ class invpinn():
         epochs (int): Epochs to train for.
         opt (string): Optimizer to use.
         meta (string): Whether to meta-learned optimize. **Not implemented**.
-        adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
+        adapt_pt (adaptive): Adaptive point sampling strategy to use.
       """
       self._epochs = epochs
       if isinstance(self._data, timeinvpinndata):
@@ -206,7 +206,7 @@ class invpinn():
         epochs (int): Epochs to train for.
         opt (string): Optimizer to use.
         meta (string): Whether to meta-learned optimize. **Not implemented**.
-        adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
+        adapt_pt (adaptive): Adaptive point sampling strategy to use.
       """
 
       lr = tf.keras.optimizers.schedules.PolynomialDecay(1e-3, epochs, 1e-4)
@@ -236,6 +236,9 @@ class invpinn():
       for i in range(epochs):
 
         n_batches = 0
+        if adapt_pt != None:
+          ds, clps = adapt_pt.AdaptiveStrategy(self._network, self._domain, self._data, self._data.get_clp(), [ds_bc, ds_d], ds, i)
+          self._data.set_clp(clps)
 
         for (clps, bcs, invps) in ds:
 
@@ -270,7 +273,7 @@ class invpinn():
         epochs (int): Epochs to train for.
         opt (string): Optimizer to use.
         meta (string): Whether to meta-learned optimize. **Not implemented**.
-        adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
+        adapt_pt (adaptive): Adaptive point sampling strategy to use.
       """
 
       lr = tf.keras.optimizers.schedules.PolynomialDecay(1e-3, epochs, 1e-4)
@@ -300,6 +303,9 @@ class invpinn():
       for i in range(epochs):
 
         n_batches = 0
+        if adapt_pt != None:
+          ds, clps = adapt_pt.AdaptiveStrategy(self._network, self._domain, self._data, self._data.get_clp(), [ds_bc, ds_ic, ds_d], ds, i)
+          self._data.set_clp(clps)
 
         for (clps, bcs, ics, invps) in ds:
           
