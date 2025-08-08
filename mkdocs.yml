@@ -16,6 +16,12 @@ nav:
       - PDEs in x and y: tutorials/legacy/Tutorials_PDEs_xy/PDE_xy_tutorials.md
 
   - API:
+    - adaptives:
+      - adaptives: adaptives/adaptives.md
+      - RAR: adaptives/RAR.md
+      - RAD: adaptives/RAD.md
+      - RARD: adaptives/RARD.md
+
     - boundaries:
       - boundaries: boundaries/boundaries.md
       - periodic: boundaries/periodic.md

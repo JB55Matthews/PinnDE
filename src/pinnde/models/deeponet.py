@@ -164,7 +164,7 @@ class deeponet():
       return self._eqns
   
 
-    def train(self, epochs, opt="adam", meta="false", adapt_pt="false"):
+    def train(self, epochs, opt="adam", meta="false", adapt_pt=None):
       """
       Main training function
       
@@ -172,7 +172,7 @@ class deeponet():
         epochs (int): Epochs to train for.
         opt (string): Optimizer to use.
         meta (string): Whether to meta-learned optimize. **Not implemented**.
-        adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
+        adapt_pt (adaptive): Adaptive point sampling strategy to use. **Not implemented**.
       """
       self._epochs = epochs
       if isinstance(self._data, timedondata):
@@ -217,7 +217,7 @@ class deeponet():
         epochs (int): Epochs to train for.
         opt (string): Optimizer to use.
         meta (string): Whether to meta-learned optimize. **Not implemented**.
-        adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
+        adapt_pt (adaptive): Adaptive point sampling strategy to use. **Not implemented**.
       """
 
       lr = tf.keras.optimizers.schedules.PolynomialDecay(1e-3, epochs, 1e-4)
@@ -256,6 +256,9 @@ class deeponet():
       for i in range(epochs):
 
         n_batches = 0
+        # if adapt_pt != None:
+        #   ds, clps = adapt_pt.AdaptiveStrategy(self._network, self._domain, self._data, self._data.get_clp(), [ds_bc, ds_u], ds, i)
+        #   self._data.set_clp(clps)
 
         for (clps, bcs, usensors) in ds:
 
@@ -286,27 +289,13 @@ class deeponet():
         epochs (int): Epochs to train for.
         opt (string): Optimizer to use.
         meta (string): Whether to meta-learned optimize. **Not implemented**.
-        adapt_pt (string): Adaptive point sampling strategy to use. **Not implemented**.
+        adapt_pt (adaptive): Adaptive point sampling strategy to use. **Not implemented**.
       """
       
       lr = tf.keras.optimizers.schedules.PolynomialDecay(1e-3, epochs, 1e-4)
       opt = pinnSelectors.pinnSelector(opt)(lr)
       bs_clp, bs_bcp, bs_icp, bs_u = self._data.get_n_clp(), self._data.get_n_bc(), self._data.get_n_ic(), self._data.get_n_sensors()
 
-      # ds_clp = tf.data.Dataset.from_tensor_slices(self._data.get_clp())
-      # ds_clp = ds_clp.cache().shuffle(self._data.get_n_clp()).batch(bs_clp)
-
-      # ds_bc = tf.data.Dataset.from_tensor_slices(self._data.get_bcp())
-      # ds_bc = ds_bc.cache().shuffle(self._data.get_n_bc()).batch(bs_bcp)
-
-      # ds_ic = tf.data.Dataset.from_tensor_slices(self._data.get_icp())
-      # ds_ic = ds_ic.cache().shuffle(self._data.get_n_ic()).batch(bs_icp)
-
-      # ds_u = tf.data.Dataset.from_tensor_slices(self._data.get_sensors())
-      # ds_u = ds_u.cache().shuffle(self._data.get_n_sensors()).batch(bs_u)
-
-      # ds = tf.data.Dataset.zip((ds_clp, ds_bc, ds_ic, ds_u))
-      # ds = ds.prefetch(tf.data.experimental.AUTOTUNE)
 
       # ------
       N = self._clp.shape[0]
@@ -331,11 +320,12 @@ class deeponet():
       for i in range(epochs):
 
         n_batches = 0
+        # if adapt_pt != None:
+        #   ds, clps = adapt_pt.AdaptiveStrategy(self._network, self._domain, self._data, self._data.get_clp(), [ds_bc, ds_ic, ds_u], ds, i)
+        #   self._data.set_clp(clps)
 
         for (clps, bcs, ics, usensors) in ds:
-          # print(ics.shape)
-          # print(usensors.shape)
-          
+         
           CLPloss, BCloss, ICloss, grads = deeponetTrainSteps.trainStepTime(eqns, clps, bcs, ics, usensors, self._network, 
                                                                       self._boundaries, self._t_orders, self._constraint)
           opt.apply_gradients(zip(grads, self._network.trainable_variables))
