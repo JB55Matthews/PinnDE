@@ -18,19 +18,22 @@ def plot_solution_prediction_1D(model):
     eqns = model.get_eqns()
     network = model.get_network()
     domain = model.get_domain()
+    data = model.get_data()
 
     t = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], 200)
     
     if isinstance(model, pinn):
         sols = network(np.expand_dims(t, axis=1))
     elif isinstance(model, deeponet):
-        x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
-        amplitudes = np.random.randn(3, 1)
-        phases = -np.pi*np.random.rand(3, 1) + np.pi/2
-        u = 0.0*x
-        for i in range(3):
-            u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])
-        sensors = u.numpy()    
+        # x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
+        # amplitudes = np.random.randn(3, 1)
+        # phases = -np.pi*np.random.rand(3, 1) + np.pi/2
+        # u = 0.0*x
+        # for i in range(3):
+        #     u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])
+        # sensors = u.numpy()    
+        sensors = [data.generate_sensors()[0]]
+        sensors = np.reshape(sensors, (1,len(sensors[0])))
         sols = network([np.expand_dims(t, axis=1), sensors])
         sols = tf.squeeze(sols, axis=1)
     
@@ -70,6 +73,7 @@ def plot_solution_prediction_time1D(model):
     eqns = model.get_eqns()
     network = model.get_network()
     domain = model.get_domain()
+    data = model.get_data()
     time_range = domain.get_timeRange()
 
     T, X = np.meshgrid(np.linspace(time_range[0], time_range[1], 200), 
@@ -79,13 +83,15 @@ def plot_solution_prediction_time1D(model):
         sols = network([np.expand_dims(T.flatten(), axis=1), np.expand_dims(X.flatten(), axis=1)])
 
     elif (isinstance(model, deeponet)):
-        x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
-        amplitudes = np.random.randn(3, 1)
-        phases = -np.pi*np.random.rand(3, 1) + np.pi/2
-        u = 0.0*x
-        for i in range(3):
-            u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])
-        sensors = u.numpy()
+        # x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
+        # amplitudes = np.random.randn(3, 1)
+        # phases = -np.pi*np.random.rand(3, 1) + np.pi/2
+        # u = 0.0*x
+        # for i in range(3):
+        #     u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])
+        # sensors = u.numpy()
+        sensors = [data.generate_sensors()[0]]
+        sensors = np.reshape(sensors, (1,len(sensors[0])))
         sols = network([np.expand_dims(T.flatten(), axis=1), np.expand_dims(X.flatten(), axis=1), sensors])
 
     elif (isinstance(model, invpinn)):
@@ -125,6 +131,7 @@ def plot_solution_prediction_2D(model):
     network = model.get_network()
     domain = model.get_domain()
     eqns = model.get_eqns()
+    data = model.get_data()
     
     X1, X2 = np.meshgrid(np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], 200), 
                          np.linspace(domain.get_min_dim_vals()[1], domain.get_max_dim_vals()[1], 200), indexing='ij')
@@ -133,14 +140,16 @@ def plot_solution_prediction_2D(model):
     if isinstance(model, pinn):
         sols = network([np.expand_dims(X1.flatten(), axis=1), np.expand_dims(X2.flatten(), axis=1)])
     elif isinstance(model, deeponet):
-        x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
-        y = np.linspace(domain.get_min_dim_vals()[1], domain.get_max_dim_vals()[1], model.get_data().get_n_sensors())
-        amplitudes = np.random.randn(3, 1)
-        phases = -np.pi*np.random.rand(3, 1) + np.pi/2
-        u = 0.0*x
-        for i in range(3):
-            u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])*tf.sin((i+1)*np.expand_dims(y, axis=0)+ phases[i])
-        sensors = u.numpy()
+        # x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
+        # y = np.linspace(domain.get_min_dim_vals()[1], domain.get_max_dim_vals()[1], model.get_data().get_n_sensors())
+        # amplitudes = np.random.randn(3, 1)
+        # phases = -np.pi*np.random.rand(3, 1) + np.pi/2
+        # u = 0.0*x
+        # for i in range(3):
+        #     u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])*tf.sin((i+1)*np.expand_dims(y, axis=0)+ phases[i])
+        # sensors = u.numpy()
+        sensors = [data.generate_sensors()[0]]
+        sensors = np.reshape(sensors, (1,len(sensors[0])))
         sols = network([np.expand_dims(X1.flatten(), axis=1), np.expand_dims(X2.flatten(), axis=1), sensors])
 
     elif (isinstance(model, invpinn)):
@@ -246,6 +255,7 @@ def plot_solution_prediction_time2D(model):
     """
     eqns = model.get_eqns()
     network = model.get_network()
+    data = model.get_data()
     domain = model.get_domain()
     time_range = domain.get_timeRange()
     interval_dist = (time_range[1] - time_range[0])/3
@@ -293,14 +303,16 @@ def plot_solution_prediction_time2D(model):
                     min_val = current_min
 
             elif isinstance(model, deeponet):
-                x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
-                y = np.linspace(domain.get_min_dim_vals()[1], domain.get_max_dim_vals()[1], model.get_data().get_n_sensors())
-                amplitudes = np.random.randn(3, 1)
-                phases = -np.pi*np.random.rand(3, 1) + np.pi/2
-                u = 0.0*x
-                for i in range(3):
-                    u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])*tf.sin((i+1)*np.expand_dims(y, axis=0)+ phases[i])
-                sensors = u.numpy()
+                # x = np.linspace(domain.get_min_dim_vals()[0], domain.get_max_dim_vals()[0], model.get_data().get_n_sensors())
+                # y = np.linspace(domain.get_min_dim_vals()[1], domain.get_max_dim_vals()[1], model.get_data().get_n_sensors())
+                # amplitudes = np.random.randn(3, 1)
+                # phases = -np.pi*np.random.rand(3, 1) + np.pi/2
+                # u = 0.0*x
+                # for i in range(3):
+                #     u += amplitudes[i]*tf.sin((i+1)*np.expand_dims(x, axis=0)+ phases[i])*tf.sin((i+1)*np.expand_dims(y, axis=0)+ phases[i])
+                # sensors = u.numpy()
+                sensors = [data.generate_sensors()[0]]
+                sensors = np.reshape(sensors, (1,len(sensors[0])))
                 sol_pred = network([t[:, None], 
                                 X1.flatten()[:, None], 
                                 X2.flatten()[:, None],

@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import ast
 
+@tf.function
 def trainStep(eqns, clps, bcs, data, network, boundary, constraint, constants):
     """
     Main training step for purely spatial problems.
@@ -51,6 +52,7 @@ def trainStep(eqns, clps, bcs, data, network, boundary, constraint, constants):
                 u = network(clps_group)[0]
                 consts = network(clps_group)[-len(constants):]
                 u = tf.cast(u, tf.float32)
+                globals()[f"u"] = u
                 for i in range(dim):
                     globals()[f"x{i+1}"] = tf.cast(clps_group[i], tf.float32)
                     globals()[f"ux{i+1}"] = tf.cast(tape1.gradient(u, clps_group[i]), tf.float32)
@@ -170,7 +172,7 @@ def trainStep(eqns, clps, bcs, data, network, boundary, constraint, constants):
     grads = tape.gradient(loss, network.trainable_variables)
     return CLPloss, BCloss, dataLoss, grads
 
-
+@tf.function
 def trainStepTime(eqns, clps, bcs, ics, data, network, boundary, t_orders, constraint, constants):
     """
     Main training step for spatio-temporal problems.
@@ -241,9 +243,13 @@ def trainStepTime(eqns, clps, bcs, ics, data, network, boundary, t_orders, const
                 u = network(clps_group)[0]
                 consts = network(clps_group)[-len(constants):]
                 u = tf.cast(u, tf.float32)
+                globals()[f"u"] = u
                 ut = tf.cast(tape1.gradient(u, clps_group[0]), tf.float32)
+                globals()[f"ut"] = ut
                 utt = tf.cast(tape1.gradient(ut, clps_group[0]), tf.float32)
+                globals()[f"utt"] = utt
                 uttt = tf.cast(tape1.gradient(utt, clps_group[0]), tf.float32)
+                globals()[f"uttt"] = uttt
                 for i in range(dim):
                     globals()[f"x{i+1}"] = tf.cast(clps_group[i+1], tf.float32)
                     globals()[f"ux{i+1}"] = tf.cast(tape1.gradient(u, clps_group[i+1]), tf.float32)
@@ -266,6 +272,7 @@ def trainStepTime(eqns, clps, bcs, ics, data, network, boundary, t_orders, const
 
 
         t = tf.cast(clps_group[0], tf.float32)
+        globals()[f"t"] = t
         for var in range(len(constants)):
             globals()[constants[var]] = consts[var]
 

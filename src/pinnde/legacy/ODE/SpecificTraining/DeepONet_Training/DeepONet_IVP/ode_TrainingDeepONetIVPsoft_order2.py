@@ -11,6 +11,12 @@ import ast
 from jax import config
 config.update("jax_enable_x64", True)
 
+def make_equation_fn(equation: str):
+    parse_tree = ast.parse(equation, mode="eval")
+    code = compile(parse_tree, "<string>", "eval")
+    return lambda u, ut, utt: eval(code, {"u": u, "ut": ut, "utt": utt, "jnp": jnp})
+
+
 # Define the normalization layer
 class Normalize(nn.Module):
   xmin: float
@@ -104,7 +110,7 @@ def train_step(params, pdes, z, zt):
     u = u0(t, z, zt, params)
     parse_tree = ast.parse(equation, mode="eval")
     eqn = eval(compile(parse_tree, "<string>", "eval"))
-
+    # eqn = equation_fn(u, ut, utt)
     x0 = np.repeat(np.expand_dims(t_0, axis=0), len(t), axis=0)
     u0_pred = u0(x0, z, zt, params)
     eqn2 = init_0 - u0_pred
@@ -168,6 +174,9 @@ def startTraining(eval_points, inits, order, t, N_sensors, sensor_range, epochs,
 
   global deeponet
   deeponet = DeepONet(t[0], t[1], layers=net_layers, units=net_units)
+
+  global equation_fn
+  equation_fn = make_equation_fn(eqn)
   
   global t_0, init_0, init_1
   t_0 = float(t[0])

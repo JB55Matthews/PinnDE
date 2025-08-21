@@ -34,3 +34,10 @@ class data():
             clp (tensor): New collocation points.
         """
         self._clp = clp
+
+    def set_n_clp(self, n_clp):
+        """
+        Args:
+            n_clp (tensor): New number of collocation points.
+        """
+        self._n_clp = n_clp

@@ -77,8 +77,7 @@ class RARD(adaptives):
     """
 
     if ((np.mod(i, self._frequency)==0) and (i != 0)):
-      N_clp = data.get_n_clp()
-      points = domain.sampleDomain(self._samplefactor*N_clp)
+      points = domain.sampleDomain(self._samplefactor*data.get_n_clp())
       clps_group = []
       for i in range(points.shape[1]):
           clps_group.append(points[:,i:i+1])
@@ -103,6 +102,8 @@ class RARD(adaptives):
       points = np.delete(points, [points_id], 0)
       cdf = np.delete(cdf, [points_id], 0)
 
+      data.set_n_clp(data.get_n_clp()+self._pointsperfreq)
+      N_clp = data.get_n_clp()
       for j in range(self._pointsperfreq-1):
         sample = np.random.rand()
         points_id = np.argmax(cdf>sample)

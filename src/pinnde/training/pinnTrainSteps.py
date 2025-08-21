@@ -2,6 +2,8 @@ import tensorflow as tf
 import numpy as np
 import ast
 
+
+@tf.function
 def trainStep(eqns, clps, bcs, network, boundary, constraint):
     """
     Main training step for purely spatial problems.
@@ -43,6 +45,7 @@ def trainStep(eqns, clps, bcs, network, boundary, constraint):
 
             if len(eqns) == 1:
                 u = tf.cast(network(clps_group), tf.float32)
+                globals()[f"u"] = u
                 for i in range(dim):
                     globals()[f"x{i+1}"] = tf.cast(clps_group[i], tf.float32)
                     globals()[f"ux{i+1}"] = tf.cast(tape1.gradient(u, clps_group[i]), tf.float32)
@@ -80,6 +83,7 @@ def trainStep(eqns, clps, bcs, network, boundary, constraint):
             u_bc_pred = network(bcs_group)
             u_bcs = tf.cast(u_bcs, tf.float32)
             BCloss = tf.reduce_mean(tf.square(u_bcs-u_bc_pred))
+    
 
         # neumann
         elif bdry_type == 3:
@@ -125,9 +129,10 @@ def trainStep(eqns, clps, bcs, network, boundary, constraint):
                         if (len(eqns) == 1):
                             u_init_pred = network(ics_group[:dim])
                         else:
-                            u_init_pred = network(ics_group[:dim])[e]
+                            u_init_pred = network(ics_group[:dim])[e]            
                         BCloss += tf.reduce_mean(tf.square(u_init_pred - tf.cast(ics_group[dim_iter], tf.float32)))
                         dim_iter += 1
+
                         for i in range(t_orders[e]-1):
                             next_pred = tf.cast(tape2.gradient(u_init_pred, ics_group[0]), tf.float32)
                             BCloss += tf.reduce_mean(tf.square(next_pred - tf.cast(ics_group[(dim_iter)], tf.float32)))
@@ -143,6 +148,7 @@ def trainStep(eqns, clps, bcs, network, boundary, constraint):
     return CLPloss, BCloss, grads
 
 
+@tf.function
 def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders, constraint):
     """
     Main training step for spatio-temporal problems.
@@ -204,9 +210,13 @@ def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders, constraint)
             
             if (len(eqns)) == 1:
                 u = tf.cast(network(clps_group), tf.float32)
+                globals()[f"u"] = u
                 ut = tf.cast(tape1.gradient(u, clps_group[0]), tf.float32)
+                globals()[f"ut"] = ut
                 utt = tf.cast(tape1.gradient(ut, clps_group[0]), tf.float32)
+                globals()[f"utt"] = utt
                 uttt = tf.cast(tape1.gradient(utt, clps_group[0]), tf.float32)
+                globals()[f"uttt"] = uttt
                 for i in range(dim):
                     globals()[f"x{i+1}"] = tf.cast(clps_group[i+1], tf.float32)
                     globals()[f"ux{i+1}"] = tf.cast(tape1.gradient(u, clps_group[i+1]), tf.float32)
@@ -225,8 +235,8 @@ def trainStepTime(eqns, clps, bcs, ics, network, boundary, t_orders, constraint)
                         globals()[f"u{e+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"u{e+1}x{i+1}"], clps_group[i+1]), tf.float32)
                         globals()[f"u{e+1}x{i+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"u{e+1}x{i+1}x{i+1}"], clps_group[i+1]), tf.float32)
 
-
         t = tf.cast(clps_group[0], tf.float32)
+        globals()[f"t"] = t
 
         CLPloss = 0
         for e in range(len(eqns)):

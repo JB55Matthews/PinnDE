@@ -46,11 +46,11 @@ class deeponet():
         pt_maxes = self._clp.max(axis=0)
         pt_mins = self._clp.min(axis=0)
 
-        self._epochs = None
-        self._epoch_loss = None
-        self._clp_loss = None
-        self._bc_loss = None
-        self._ic_loss = None
+        self._epochs = 0
+        self._epoch_loss = []
+        self._clp_loss = []
+        self._bc_loss = []
+        self._ic_loss = []
         self._eqns = eqns
 
         if isinstance(data, timedondata):
@@ -65,9 +65,7 @@ class deeponet():
         inlist = []
         blist = []
 
-        # Branch net
-        inp_u = tf.keras.layers.Input(shape=(self._n_senors,))
-        branch_net = mlp_network(inp_u, self._layers, self._units)
+        outs = []
 
         # Trunk net
         for i in range(n):
@@ -83,25 +81,32 @@ class deeponet():
             inlist.append(input)
             blist.append(bin)
 
+
+        # Branch net
+        inp_u = tf.keras.layers.Input(shape=(self._n_senors,))
         inlist.append(inp_u)
 
         b = tf.keras.layers.Concatenate()(blist)
 
-        # Actual trunk net
-        trunk_net = mlp_network(b, self._layers, self._units)
+        for e in range(len(self._eqns)):
+          branch_net = mlp_network(inp_u, self._layers, self._units)
 
-        out = tf.keras.layers.Multiply()([branch_net, trunk_net])
-        out = tf.keras.layers.Dense(1)(out)
+          # Actual trunk net
+          trunk_net = mlp_network(b, self._layers, self._units)
+
+          out = tf.keras.layers.Multiply()([branch_net, trunk_net])
+          out = tf.keras.layers.Dense(1)(out)
+          outs.append(out)
 
         if pinnSelectors.pinnSelector(self._constraint)():
-          lambda_input = inlist[:-1] + [out]
+          lambda_input = inlist[:-1] + outs
           if constraintSelector.constraintSelector(self._domain, self._boundaries, self._eqns, self._initials) != None:
             out = tf.keras.layers.Lambda(constraintSelector.constraintSelector(self._domain, self._boundaries, self._eqns, self._initials), 
                                          output_shape=(1,))(lambda_input)
-            out = [out]
+            outs = [out]
           pass
 
-        model = tf.keras.models.Model(inlist, out)
+        model = tf.keras.models.Model(inlist, outs)
         model.summary()
 
         self._network = model
@@ -145,7 +150,7 @@ class deeponet():
     def get_data(self):
       """
       Returns:
-        (tensor): Data the deeponet uses to train.
+        (data): Data the deeponet uses to train.
       """
       return self._data
 
@@ -174,7 +179,6 @@ class deeponet():
         meta (string): Whether to meta-learned optimize. **Not implemented**.
         adapt_pt (adaptive): Adaptive point sampling strategy to use. **Not implemented**.
       """
-      self._epochs = epochs
       if isinstance(self._data, timedondata):
         if opt == "lbfgs":
           # raise NotImplementedError("L-BFGS optimizer not currently supported for DeepONet") 
@@ -188,8 +192,11 @@ class deeponet():
           for (clps, bcs, ics, usensors) in ds:
             data = [clps, bcs, ics, usensors]
           extras = [self._boundaries, self._t_orders, self._constraint]
-          self._epoch_loss, self._epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, self._epochs, deeponetTrainSteps.trainStepTime, data, extras)
+          epoch_loss, epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, epochs, deeponetTrainSteps.trainStepTime, data, extras)
+          self._epochs += epochs
+          self._epoch_loss = np.concatenate([self._epoch_loss, epoch_loss], axis=0)
         else:
+          self._epochs += epochs
           self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
       else:
         if opt == "lbfgs":
@@ -203,8 +210,11 @@ class deeponet():
           for (clps, bcs, usensors) in ds:
             data = [clps, bcs, usensors]
           extras = [self._boundaries, self._constraint]
-          self._epoch_loss, self._epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, self._epochs, deeponetTrainSteps.trainStep, data, extras)
+          epoch_loss, epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, epochs, deeponetTrainSteps.trainStep, data, extras)
+          self._epochs += epochs
+          self._epoch_loss = np.concatenate([self._epoch_loss, epoch_loss], axis=0)
         else:
+          self._epochs += epochs
           self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)      
     
 
@@ -274,9 +284,9 @@ class deeponet():
         if (np.mod(i, 100)==0):
             print("CLP loss, BC loss in {}th epoch: {: 6.4f}, {: 6.4f}.".format(i, CLPloss.numpy(), BCloss.numpy()))
 
-      self._epoch_loss = epoch_loss
-      self._clp_loss = clp_loss
-      self._bc_loss = bc_loss
+      self._epoch_loss = np.concatenate([self._epoch_loss, epoch_loss], axis=0)
+      self._clp_loss = np.concatenate([self._clp_loss, clp_loss], axis=0)
+      self._bc_loss = np.concatenate([self._bc_loss, bc_loss], axis=0)
       self._eqns = eqns
       return
 
@@ -340,10 +350,10 @@ class deeponet():
         if (np.mod(i, 100)==0):
             print("CLP loss, BC loss, IV loss in {}th epoch: {: 6.4f}, {: 6.4f}, {: 6.4f}.".format(i, CLPloss.numpy(), BCloss.numpy(), ICloss.numpy()))
 
-      self._epoch_loss = epoch_loss
-      self._clp_loss = clp_loss
-      self._bc_loss = bc_loss
-      self._ic_loss = ic_loss
+      self._epoch_loss = np.concatenate([self._epoch_loss, epoch_loss], axis=0)
+      self._clp_loss = np.concatenate([self._clp_loss, clp_loss], axis=0)
+      self._bc_loss = np.concatenate([self._bc_loss, bc_loss], axis=0)
+      self._ic_loss = np.concatenate([self._ic_loss, ic_loss], axis=0)
       self._eqns = eqns
       return
 

@@ -47,11 +47,12 @@ class invpinn():
         pt_maxes = self._clp.max(axis=0)
         pt_mins = self._clp.min(axis=0)
 
-        self._epochs = None
-        self._epoch_loss = None
-        self._clp_loss = None
-        self._bc_loss = None
-        self._ic_loss = None
+        self._epochs = 0
+        self._epoch_loss = []
+        self._clp_loss = []
+        self._bc_loss = []
+        self._ic_loss = []
+        self._data_loss = []
         self._eqns = eqns
 
         if isinstance(data, timeinvpinndata):
@@ -90,7 +91,8 @@ class invpinn():
           outs.append(out)
         for i in range(len(constants)):
           # out = tf.keras.layers.Dense(1, activation=out_act)(b)
-          out = Weight()(b)
+          # out = Weight()(b)
+          out = tf.keras.layers.Dense(1, activation=out_act)(b)
           outs.append(out)
 
         if pinnSelectors.pinnSelector(self._constraint)():
@@ -149,6 +151,13 @@ class invpinn():
       """
       return self._eqns
     
+    def get_data(self):
+      """
+      Returns:
+        (data): Data the pinn uses to train.
+      """
+      return self._data
+    
     def get_constants(self):
       """
       Returns:
@@ -174,16 +183,19 @@ class invpinn():
         meta (string): Whether to meta-learned optimize. **Not implemented**.
         adapt_pt (adaptive): Adaptive point sampling strategy to use.
       """
-      self._epochs = epochs
+      
       if isinstance(self._data, timeinvpinndata):
         if opt == "lbfgs":
           if self._constraint == "hard":
             raise NotImplementedError("L-BFGS optimizer not currently supported for hard constrained Inverse PINN")
           data = [tf.convert_to_tensor(self._data.get_clp()), tf.convert_to_tensor(self._data.get_bcp()),tf.convert_to_tensor(self._data.get_icp()),tf.convert_to_tensor(self._data.get_invp())]
           extras = [self._boundaries, self._t_orders, self._constraint, self._constants]
-          self._epoch_loss, self._epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, self._epochs, invpinnTrainSteps.trainStepTime, data, extras)
+          epoch_loss, epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, epochs, invpinnTrainSteps.trainStepTime, data, extras)
           self._trained_constants = self.findTrainedConstants()
+          self._epochs += epochs
+          self._epoch_loss = np.concatenate([self._epoch_loss, epoch_loss], axis=0)
         else:
+          self._epochs += epochs
           self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
       else:
         if opt == "lbfgs":
@@ -191,9 +203,12 @@ class invpinn():
             raise NotImplementedError("L-BFGS optimizer not currently supported for hard constrained Inverse PINN")
           data = [tf.convert_to_tensor(self._data.get_clp()), tf.convert_to_tensor(self._data.get_bcp()),tf.convert_to_tensor(self._data.get_invp())]
           extras = [self._boundaries, self._constraint, self._constants]
-          self._epoch_loss, self._epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, self._epochs, invpinnTrainSteps.trainStep, data, extras)
+          epoch_loss, epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, epochs, invpinnTrainSteps.trainStep, data, extras)
           self._trained_constants = self.findTrainedConstants()
+          self._epochs += epochs
+          self._epoch_loss = np.concatenate([self._epoch_loss, epoch_loss], axis=0)
         else:
+          self._epochs += epochs
           self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)      
     
 
@@ -256,10 +271,10 @@ class invpinn():
         if (np.mod(i, 100)==0):
             print("CLP loss, BC loss, Data loss in {}th epoch: {: 6.4f}, {: 6.4f}, {: 6.4f}.".format(i, CLPloss.numpy(), BCloss.numpy(), dataLoss.numpy()))
 
-      self._epoch_loss = epoch_loss
-      self._clp_loss = clp_loss
-      self._bc_loss = bc_loss
-      self._data_loss = data_loss
+      self._epoch_loss = np.concatenate([self._epoch_loss, epoch_loss], axis=0)
+      self._clp_loss = np.concatenate([self._clp_loss, clp_loss], axis=0)
+      self._bc_loss = np.concatenate([self._bc_loss, bc_loss], axis=0)
+      self._data_loss = np.concatenate([self._data_loss, data_loss], axis=0) 
       self._eqns = eqns
       self._trained_constants = self.findTrainedConstants()
       return
@@ -324,11 +339,11 @@ class invpinn():
         if (np.mod(i, 100)==0):
             print("CLP loss, BC loss, IV loss, Data loss in {}th epoch: {: 6.4f}, {: 6.4f}, {: 6.4f}, {: 6.4f}.".format(i, CLPloss.numpy(), BCloss.numpy(), ICloss.numpy(), dataLoss.numpy()))
 
-      self._epoch_loss = epoch_loss
-      self._clp_loss = clp_loss
-      self._bc_loss = bc_loss
-      self._ic_loss = ic_loss
-      self._data_loss = data_loss
+      self._epoch_loss = np.concatenate([self._epoch_loss, epoch_loss], axis=0)
+      self._clp_loss = np.concatenate([self._clp_loss, clp_loss], axis=0)
+      self._bc_loss = np.concatenate([self._bc_loss, bc_loss], axis=0)
+      self._ic_loss = np.concatenate([self._ic_loss, ic_loss], axis=0)
+      self._data_loss = np.concatenate([self._data_loss, data_loss], axis=0)      
       self._eqns = eqns
       # find trained constants
       self._trained_constants = self.findTrainedConstants()
@@ -345,7 +360,7 @@ class invpinn():
       consts = self._network(pts_group)[-len(self._constants):]
       toReturn = []
       for i in consts:
-        toReturn.append(i[0].numpy())
+        toReturn.append(i.numpy())
       return toReturn
     
 
