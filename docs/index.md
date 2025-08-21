@@ -37,4 +37,9 @@ DeepONets
 * Solve purely spatial equations
 * Simple to use plotting modules for 1+1, 1+2, spatio-temporal equations, and 1 and 2 dimensional spatial equations
 
-We provide Periodic, Dirichlet, and Neumann boundary conditions for each of these PDE problems. We also provide L-BFGS optimization for these networks.
+We provide Periodic, Dirichlet, and Neumann boundary conditions for each of these PDE problems. 
+
+We provide L-BFGS optimization for these networks.
+
+We provide Residual-Based Adaptive Refinement, Residual-Based Adaptive Distribution, and Residual-Based Adaptive Refinement with Distribution,
+(RAR, RAD, RAR-D) adaptive sampling strategies for PINNs and Inverse PINNS.

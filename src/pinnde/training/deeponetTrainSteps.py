@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import ast
 
+@tf.function
 def trainStep(eqns, clps, bcs, usensors, network, boundary, constraint):
     """
     Main training step for purely spatial problems.
@@ -47,6 +48,7 @@ def trainStep(eqns, clps, bcs, usensors, network, boundary, constraint):
 
             if len(eqns) == 1:
                 u = tf.cast(network(clps_group), tf.float32)
+                globals()[f"u"] = u
                 for i in range(dim):
                     globals()[f"x{i+1}"] = tf.cast(clps_group[i], tf.float32)
                     globals()[f"ux{i+1}"] = tf.cast(tape1.gradient(u, clps_group[i]), tf.float32)
@@ -148,7 +150,7 @@ def trainStep(eqns, clps, bcs, usensors, network, boundary, constraint):
     grads = tape.gradient(loss, network.trainable_variables)
     return CLPloss, BCloss, grads
 
-
+@tf.function
 def trainStepTime(eqns, clps, bcs, ics, usensors, network, boundary, t_orders, constraint):
     """
     Main training step for purely spatial problems.
@@ -214,9 +216,13 @@ def trainStepTime(eqns, clps, bcs, ics, usensors, network, boundary, t_orders, c
             
             if (len(eqns)) == 1:
                 u = tf.cast(network(clps_group), tf.float32)
+                globals()[f"u"] = u
                 ut = tf.cast(tape1.gradient(u, clps_group[0]), tf.float32)
+                globals()[f"ut"] = ut
                 utt = tf.cast(tape1.gradient(ut, clps_group[0]), tf.float32)
+                globals()[f"utt"] = utt
                 uttt = tf.cast(tape1.gradient(utt, clps_group[0]), tf.float32)
+                globals()[f"uttt"] = uttt
                 for i in range(dim):
                     globals()[f"x{i+1}"] = tf.cast(clps_group[i+1], tf.float32)
                     globals()[f"ux{i+1}"] = tf.cast(tape1.gradient(u, clps_group[i+1]), tf.float32)
@@ -235,8 +241,16 @@ def trainStepTime(eqns, clps, bcs, ics, usensors, network, boundary, t_orders, c
                         globals()[f"u{e+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"u{e+1}x{i+1}"], clps_group[i+1]), tf.float32)
                         globals()[f"u{e+1}x{i+1}x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"u{e+1}x{i+1}x{i+1}"], clps_group[i+1]), tf.float32)
 
+                if len(eqns) == 2:
+                    globals()[f"u1u2"] = globals()["u1"]*globals()["u2"]
+                    globals()[f"u1u2t"] = tf.cast(tape1.gradient(globals()[f"u1u2"], clps_group[0]), tf.float32)
+                    globals()[f"u1u2tt"] = tf.cast(tape1.gradient(globals()[f"u1u2t"], clps_group[0]), tf.float32)
+                    for i in range(dim):
+                        globals()[f"u1u2x{i+1}"] = tf.cast(tape1.gradient(globals()[f"u1u2"], clps_group[i+1]), tf.float32)
+                        globals()[f"u1u2x{i+1}x{i+1}"] = tf.cast(tape1.gradient(globals()[f"u1u2x{i+1}"], clps_group[i+1]), tf.float32)
 
         t = tf.cast(clps_group[0], tf.float32)
+        globals()[f"t"] = t
 
         CLPloss = 0
         for e in range(len(eqns)):

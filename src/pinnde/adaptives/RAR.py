@@ -5,7 +5,8 @@ from ..selectors.adaptSampleSelector import adaptSampleSelector
 
 class RAR(adaptives):
   """
-  Class which implements stategy to call Residule-based Adaptive Refinement.
+  Class which implements stategy to call Residule-based Adaptive Refinement, based on 
+    [DeepXDE: A deep learning library for solving differential equations](https://arxiv.org/abs/1907.04502)
   """
 
   def __init__(self, frequency, pointsperfreq):
@@ -46,14 +47,15 @@ class RAR(adaptives):
             
     """
     if ((np.mod(i, self._frequency)==0) and (i != 0)):
-      N_clp = data.get_n_clp()
-      points = domain.sampleDomain(N_clp)
+      points = domain.sampleDomain(data.get_n_clp())
       clps_group = []
       for i in range(points.shape[1]):
           clps_group.append(points[:,i:i+1])
       f = adaptSampleSelector(model, clps_group, data)
       err_eq = np.absolute(f)
 
+      data.set_n_clp(data.get_n_clp()+self._pointsperfreq)
+      N_clp = data.get_n_clp()
       for j in range(self._pointsperfreq):
         points_id = np.argmax(err_eq)
         new_point_inner = []
@@ -62,7 +64,6 @@ class RAR(adaptives):
         new_point = [new_point_inner]
         clps = tf.concat([clps, new_point], 0)
         err_eq = np.delete(err_eq, points_id, 0)
-
       ds_clp = tf.data.Dataset.from_tensor_slices(clps)
       ds_clp = ds_clp.cache().shuffle(N_clp).batch(N_clp)
 

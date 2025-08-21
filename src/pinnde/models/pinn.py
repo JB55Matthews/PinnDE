@@ -45,11 +45,11 @@ class pinn():
         pt_maxes = self._clp.max(axis=0)
         pt_mins = self._clp.min(axis=0)
 
-        self._epochs = None
-        self._epoch_loss = None
-        self._clp_loss = None
-        self._bc_loss = None
-        self._ic_loss = None
+        self._epochs = 0
+        self._epoch_loss = []
+        self._clp_loss = []
+        self._bc_loss = []
+        self._ic_loss = []
         self._eqns = eqns
 
         if isinstance(data, timepinndata):
@@ -122,6 +122,13 @@ class pinn():
       """
       return self._domain
     
+    def get_data(self):
+      """
+      Returns:
+        (data): Data the pinn uses to train.
+      """
+      return self._data
+    
     def get_epochs(self):
       """
       Returns:
@@ -154,21 +161,26 @@ class pinn():
         meta (string): Whether to meta-learned optimize. **Not implemented**.
         adapt_pt (adaptive): Adaptive point sampling strategy to use.
       """
-      self._epochs = epochs
       
       if isinstance(self._data, timepinndata):
         if opt == "lbfgs":
           data = [tf.convert_to_tensor(self._data.get_clp()), tf.convert_to_tensor(self._data.get_bcp()),tf.convert_to_tensor(self._data.get_icp())]
           extras = [self._boundaries, self._t_orders, self._constraint]
-          self._epoch_loss, self._epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, self._epochs, pinnTrainSteps.trainStepTime, data, extras)
+          epoch_loss, epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, epochs, pinnTrainSteps.trainStepTime, data, extras)
+          self._epochs += epochs
+          self._epoch_loss = np.concatenate([self._epoch_loss, epoch_loss], axis=0)
         else:
+          self._epochs += epochs
           self.trainTime(self._eqns, epochs, opt, meta, adapt_pt)
       else:
         if opt == "lbfgs":
           data = [tf.convert_to_tensor(self._data.get_clp()), tf.convert_to_tensor(self._data.get_bcp())]
           extras = [self._boundaries, self._constraint]
-          self._epoch_loss, self._epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, self._epochs, pinnTrainSteps.trainStep, data, extras)
+          epoch_loss, epochs = lbfgsTrainSteps.lbfgsTrain(self._network, self._eqns, epochs, pinnTrainSteps.trainStep, data, extras)
+          self._epochs += epochs
+          self._epoch_loss = np.concatenate([self._epoch_loss, epoch_loss], axis=0)
         else:
+          self._epochs += epochs
           self.trainNoTime(self._eqns, epochs, opt, meta, adapt_pt)      
     
 
@@ -225,9 +237,9 @@ class pinn():
         if (np.mod(i, 100)==0):
             print("CLP loss, BC loss in {}th epoch: {: 6.4f}, {: 6.4f}.".format(i, CLPloss.numpy(), BCloss.numpy()))
 
-      self._epoch_loss = epoch_loss
-      self._clp_loss = clp_loss
-      self._bc_loss = bc_loss
+      self._epoch_loss = np.concatenate([self._epoch_loss, epoch_loss], axis=0)
+      self._clp_loss = np.concatenate([self._clp_loss, clp_loss], axis=0)
+      self._bc_loss = np.concatenate([self._bc_loss, bc_loss], axis=0)
       self._eqns = eqns
       return
 
@@ -287,10 +299,10 @@ class pinn():
         if (np.mod(i, 100)==0):
             print("CLP loss, BC loss, IV loss in {}th epoch: {: 6.4f}, {: 6.4f}, {: 6.4f}.".format(i, CLPloss.numpy(), BCloss.numpy(), ICloss.numpy()))
 
-      self._epoch_loss = epoch_loss
-      self._clp_loss = clp_loss
-      self._bc_loss = bc_loss
-      self._ic_loss = ic_loss
+      self._epoch_loss = np.concatenate([self._epoch_loss, epoch_loss], axis=0)
+      self._clp_loss = np.concatenate([self._clp_loss, clp_loss], axis=0)
+      self._bc_loss = np.concatenate([self._bc_loss, bc_loss], axis=0)
+      self._ic_loss = np.concatenate([self._ic_loss, ic_loss], axis=0)
       self._eqns = eqns
       return
 

@@ -1,7 +1,7 @@
 from .data import data
 import numpy as np
 import tensorflow as tf
-from ..domain import timedomain, domain
+from ..boundaries import odeicbc
 
 
 class dondata(data):
@@ -9,7 +9,7 @@ class dondata(data):
     Class for data on purely spatial problems with a deep operator network.
     """
 
-    def __init__(self, domain, boundaries, n_clp=10000, n_bc=600, n_sensors=1000):
+    def __init__(self, domain, boundaries, n_clp=10000, n_bc=600, n_sensors=100):
         """
         Constructor for class
 
@@ -38,22 +38,27 @@ class dondata(data):
         Returns:
           (tensor): Sampled sensors.
         """
-        max_waves = 3
-        clps = self._domain.sampleDomain(self._n_sensors)
-        if (isinstance(self._domain, timedomain)):
-           clps = clps[:,1:]
+        if isinstance(self._boundaries, odeicbc):
+            u = np.random.uniform(min(self._boundaries.get_conditions())-1, max(self._boundaries.get_conditions())+1, (self._n_clp,self._n_sensors))
+            usensors = np.float32(u)
+            print(usensors)
+            return usensors
+      
+        else:
+            max_waves = 3
+            clps = self._domain.sampleDomain(self._n_sensors)
 
-        amplitudes = np.random.randn(self._n_clp, max_waves)
-        phases = -np.pi*np.random.rand(self._n_clp, max_waves) + np.pi/2
+            amplitudes = np.random.randn(self._n_clp, max_waves)
+            phases = -np.pi*np.random.rand(self._n_clp, max_waves) + np.pi/2
 
-        
-        u = 0.0*np.repeat(np.expand_dims(clps[:,0:1].flatten(), axis=0), repeats=self._n_clp, axis=0)
-        for i in range(max_waves):
-           u += amplitudes[:,i:i+1]
-           for i in range(self._domain.get_dim()):
-              u = u*tf.sin((i+1)*np.repeat(np.expand_dims(clps[:, i:i+1].flatten(), axis=0), repeats=self._n_clp, axis=0) + phases[:,i:i+1])
-        usensors = np.float32(u.numpy())
-        return usensors
+            
+            u = 0.0*np.repeat(np.expand_dims(clps[:,0:1].flatten(), axis=0), repeats=self._n_clp, axis=0)
+            for i in range(max_waves):
+              u += amplitudes[:,i:i+1]
+              for i in range(self._domain.get_dim()):
+                  u = u*tf.sin((i+1)*np.repeat(np.expand_dims(clps[:, i:i+1].flatten(), axis=0), repeats=self._n_clp, axis=0) + phases[:,i:i+1])
+            usensors = np.float32(u.numpy())
+            return usensors
 
     def get_clp(self):
       """
